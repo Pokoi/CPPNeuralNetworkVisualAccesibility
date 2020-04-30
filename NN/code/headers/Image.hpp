@@ -1,3 +1,4 @@
+
 #pragma once
 
 #include "Pixel.hpp"
@@ -119,7 +120,7 @@ public:
     @brief Exports the image to the given path
     @param path The path where exports the image
     */
-    void export (std::string path)
+    void export_image (std::string path)
     {}
 
     /**

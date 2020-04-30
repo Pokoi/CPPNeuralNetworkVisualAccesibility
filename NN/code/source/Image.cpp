@@ -182,6 +182,6 @@ void Image::sobel_colour(Image& output)
     }
 
     // Free the memory
-    delete buffer;
+    delete [] buffer;
 
 }
