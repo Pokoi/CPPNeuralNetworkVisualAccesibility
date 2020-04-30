@@ -141,4 +141,23 @@ public:
         green   += (original)->rgb_components.green;
         blue    += (original)->rgb_components.blue;
     }
+
+    /**
+    @brief Apply a sobel colour effect to the image and store the result in the given image
+    @param output The image where store the new image
+    */
+    void sobel_colour(Image& output);
+
+    float colour_difference(Pixel& first, Pixel& second)
+    {
+        first.convert_rgb_to_luv();
+        second.convert_rgb_to_luv();
+
+        return pow  (
+                        pow (second.luv_components.l - first.luv_components.l, 2.f) + 
+                        pow (second.luv_components.u - first.luv_components.u, 2.f) +
+                        pow (second.luv_components.v - first.luv_components.v, 2.f), 0.5f
+
+                    );
+    }
 };
