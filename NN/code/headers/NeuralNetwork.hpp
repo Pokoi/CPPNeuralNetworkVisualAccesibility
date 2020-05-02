@@ -60,6 +60,14 @@ public:
     */
     void feed_forward(float* inputs, float* output);
 
+    /**
+    @brief Calculates the backpropagation
+    @param output The output values of the information proccess of the feed_forward output
+    @param desired The desired values
+    */
+    void back_propagation(float* output, float* desired);   
+
+
 private:
 
     /**
