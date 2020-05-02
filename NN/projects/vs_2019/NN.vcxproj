@@ -13,10 +13,15 @@
   <ItemGroup>
     <ClCompile Include="..\..\code\source\Image.cpp" />
     <ClCompile Include="..\..\code\source\main.cpp" />
+    <ClCompile Include="..\..\code\source\NeuralNetwork.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\headers\Image.hpp" />
+    <ClInclude Include="..\..\code\headers\Layer.hpp" />
+    <ClInclude Include="..\..\code\headers\NeuralNetwork.hpp" />
     <ClInclude Include="..\..\code\headers\NeuralNetworkApplication.hpp" />
+    <ClInclude Include="..\..\code\headers\Neuron.hpp" />
+    <ClInclude Include="..\..\code\headers\NNActivations.hpp" />
     <ClInclude Include="..\..\code\headers\Pixel.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

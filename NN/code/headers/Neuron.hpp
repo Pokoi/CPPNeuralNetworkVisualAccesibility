@@ -16,8 +16,8 @@ private:
         uint8_t size;
     } weights;
 
-    float value;
-    float delta;
+    float value = 0.f;
+    float delta = 0.f;
 
 public: 
 

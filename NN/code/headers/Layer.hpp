@@ -2,6 +2,7 @@
 
 #include <Neuron.hpp>
 #include <NNActivations.hpp>
+#include <cstdint>
 
 /** 
  * Class that manages the data of a layer
@@ -13,7 +14,7 @@ private:
 
     NNActivations::activations activation;
     Neuron ** neurons;
-    uint neurons_count;
+    uint32_t neurons_count;
 
 public:
 
@@ -24,9 +25,9 @@ public:
      * @param activation The activation function type to apply to this layer
     */
     Layer   (
-                uint neurons_count,
-                uint neurons_previous_layer,
-                NNActivations::activations activation
+                uint32_t neurons_count,
+                uint32_t neurons_previous_layer,
+                NNActivations::activations activation = NNActivations::RELU
             ) 
             : 
             neurons_count {neurons_count},
@@ -66,7 +67,7 @@ public:
      * @brief Gets the amount of neurons on this layer 
      * @return The amount of neurons on this layer
     */
-    uint get_neurons_size()
+    uint32_t get_neurons_size()
     {
         return neurons_count;
     }
@@ -76,7 +77,7 @@ public:
     */
     ~Layer () 
     {
-        for (uint i = 0; i < neurons_count; ++i)
+        for (uint32_t i = 0; i < neurons_count; ++i)
         {
             delete neurons[i];
         }

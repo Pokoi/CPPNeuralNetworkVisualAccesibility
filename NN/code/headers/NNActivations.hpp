@@ -24,7 +24,7 @@ public:
     /** 
      * @brief Gets a global accesible instance of this class. 
     */
-    NNActivations & get()
+    static NNActivations & get()
     {
         static NNActivations instance  = NNActivations();
         return instance;
