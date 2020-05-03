@@ -4,6 +4,8 @@
 #include "Pixel.hpp"
 #include <cstdint>
 #include <string>
+#include <qpixmap.h>
+#include <qcolor.h>
 
 class Image
 {
@@ -37,12 +39,7 @@ public:
     @brief Loads an image data from a file path
     #param path The path of the image
     */
-    Image (std::string path)
-    {
-        width = 0;
-        height = 0;
-        pixels = new Pixel[2];
-    }
+    Image(std::string path);
 
     /**
     @brief Gets the width of the image
@@ -120,8 +117,7 @@ public:
     @brief Exports the image to the given path
     @param path The path where exports the image
     */
-    void export_image (std::string path)
-    {}
+    void export_image(std::string path);
 
     /**
     @brief Blurs the image. New image is stored in the given image container

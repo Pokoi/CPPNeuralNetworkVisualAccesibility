@@ -1,6 +1,52 @@
 
 #include <Image.hpp>
 
+
+/**
+@brief Exports the image to the given path
+@param path The path where exports the image
+*/
+void Image::export_image(std::string path)
+{
+    QImage img = QImage(int(width), int(height), QImage::Format::Format_RGB32);
+    QRgb value;
+
+    for (uint16_t i = 0; i < width; ++i)
+    {
+        for (uint16_t j = 0; j < height; ++j)
+        {
+            Pixel& pixel = pixels[j * width + i];
+            value = qRgb(pixel.rgb_components.red * 255, pixel.rgb_components.green * 255, pixel.rgb_components.blue * 255);
+            img.setPixel(i, j, value);
+        }
+    }
+
+    img.save(QString::fromStdString(path));
+}
+
+/**
+@brief Loads an image data from a file path
+#param path The path of the image
+*/
+Image::Image(std::string path)
+{
+
+    QImage image = (QPixmap(QString::fromStdString(path))).toImage();
+    width = image.width;
+    height = image.height;
+    pixels = new Pixel[width * height];
+
+    for (uint16_t i = 0; i < width; ++i)
+    {
+        for (uint16_t j = 0; j < height; ++j)
+        {
+            QColor colour = image.pixel(i, j);
+            pixels[j * width + i].rgb_components = Pixel::RGB(size_t(colour.red()), size_t(colour.green()), size_t(colour.blue()));
+        }
+    }
+
+}
+
 /**
 @brief Blurs the image. New image is stored in the given image container
 @param output The image where store the new image
