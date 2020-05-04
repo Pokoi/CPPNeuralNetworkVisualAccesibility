@@ -12,6 +12,9 @@ private:
     float* neural_network_output = nullptr;
     float* neural_network_desired_output= nullptr;
 
+    enum impairment_types {DEUTERANOPIA, PROTANOPIA};
+    impairment_types type;
+
 public:
 
     /**
@@ -19,7 +22,14 @@ public:
     */
     NeuralNetworkApplication(int& argc, char** argv) : QCoreApplication(argc, argv)
     {
-       
+        type = impairment_types::DEUTERANOPIA;
+
+        Image test("D:/Repositorios/CPPNeuralNetworkVisualAccesibility/NN/assets/training_dataset/0.png");
+        Image sobeled(test.get_width(), test.get_height());
+
+        test.sobel_colour(sobeled);
+        sobeled.export_image("D:/Repositorios/CPPNeuralNetworkVisualAccesibility/NN/assets/generated/0.png");
+
     }
 
     /**
@@ -33,7 +43,7 @@ public:
         uint16_t training_iterations = 10;
         std::string path = "../../assets/training_dataset/";
 
-        uint32_t size = image_width * image_height;
+        uint32_t size = image_width * image_height * 3;
 
         neural_network_input            = new float[size];
         neural_network_output           = new float[size];
@@ -49,7 +59,7 @@ public:
         {
             for (uint16_t j = 0; j < dataset_count; ++j)
             {
-                Image img(path + std::to_string(j + 1) + ".jpg");
+                Image img(path + std::to_string(j) + ".png");
 
                 extract_input_from_image(img);
                 
@@ -131,9 +141,76 @@ public:
         }
     }
 
+    /**
+    @brief Apply the transformations to the output needed to the output
+    @param original The original image
+    @param output The output of the neural network. The values will be overriden with the new ones 
+    */
+    void parse_output(Image& original, float* output)
+    {
+        // Create an image with the neural network output data
+        uint32_t size = original.get_height() * original.get_width();
 
-    void parse_output(Image & original, float* output);
+        Image output_img (original.get_width(), original.get_height());
 
+        Pixel* start = output_img.get_pixels();
+        Pixel* last_pixel = start + size;
+
+        float* pixel_components = output;
+
+        while (start < last_pixel)
+        {
+            start->rgb_components.red   = limit(*(pixel_components), 0.f, 1.f);
+            start->rgb_components.green = limit(*(pixel_components + 1), 0.f, 1.f);
+            start->rgb_components.blue  = limit(*(pixel_components + 2), 0.f, 1.f);
+
+            ++start;
+            pixel_components += 3;
+        }
+
+        // Impaired simulation
+        switch (type)
+        {
+        case DEUTERANOPIA:
+
+            start = output_img.get_pixels();
+
+            while (start < last_pixel)
+            {
+                start->simulate_deuteranopia();
+                ++start;
+            }
+
+            break;
+
+        case PROTANOPIA:
+
+            start = output_img.get_pixels();
+
+            while (start < last_pixel)
+            {
+                start->simulate_protanopia();
+                ++start;
+            }
+
+            break;
+        }
+
+        // Sobel the image
+        get_sobel_values(original, output);
+    }
+
+    /**
+    @brief Limit the value to the given limits
+    @param original The value to limit
+    @param min The min value
+    @param max The max value
+    @return The limited value
+    */
+    float limit(float& original, float min, float max)
+    {
+        return original < min ? min : original > max ? max : original;
+    }
 
 
 };

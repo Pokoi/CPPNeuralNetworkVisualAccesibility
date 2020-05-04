@@ -66,7 +66,7 @@ void NeuralNetwork::feed_forward(float* inputs, float* output)
     start = layers[2]->get_neurons();
     end = start + layers[2]->get_neurons_size();
 
-    Neuron* previous_layer_start = layers[1]->get_neurons()[0];
+    previous_layer_start = layers[1]->get_neurons()[0];
 
     while (start < end)
     {
@@ -157,9 +157,9 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
 
         error += std::abs(value);
 
-        start += 3;
-        ++output;
-        ++desired;
+        start   += 3;
+        output  += 3;
+        desired += 3;
     }
 
     float divider = 1.f / float(layers[layers_count - 1]->get_neurons_size());
@@ -185,8 +185,8 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
     // In the proposed method there is only one hidden layer. If this is not your case, you have
     // to add this into a for loop
 
-    Neuron** start = layers[1]->get_neurons();
-    Neuron** end = start + layers[1]->get_neurons_size();
+    start = layers[1]->get_neurons();
+    end = start + layers[1]->get_neurons_size();
     Neuron** next_layer_start = layers[2]->get_neurons();
 
     while (start < end)
@@ -206,7 +206,7 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
         ++start;
     }
 
-    float divider = 1.f / float(layers[1]->get_neurons_size());
+    divider = 1.f / float(layers[1]->get_neurons_size());
 
     start = layers[1]->get_neurons();
     wa *= divider;

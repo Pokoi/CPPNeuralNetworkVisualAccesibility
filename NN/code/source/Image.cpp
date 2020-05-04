@@ -30,10 +30,10 @@ void Image::export_image(std::string path)
 */
 Image::Image(std::string path)
 {
-
-    QImage image = (QPixmap(QString::fromStdString(path))).toImage();
-    width = image.width;
-    height = image.height;
+    QPixmap pm(QString(path.c_str()));
+    QImage image = (pm.toImage());
+    width = image.width();
+    height = image.height();
     pixels = new Pixel[width * height];
 
     for (uint16_t i = 0; i < width; ++i)
