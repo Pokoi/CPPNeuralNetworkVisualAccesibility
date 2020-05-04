@@ -33,7 +33,9 @@ public:
             width(width),
             height(height),
             pixels(new Pixel[width * height])
-    {}
+    {
+        
+    }
 
     /**
     @brief Loads an image data from a file path
@@ -110,7 +112,7 @@ public:
     */
     ~Image()
     {
-        delete[] pixels;
+        //delete[] pixels;
     }
 
     /**
@@ -150,11 +152,12 @@ public:
         first.convert_rgb_to_luv();
         second.convert_rgb_to_luv();
 
-        return pow  (
+       return pow  (
                         pow (second.luv_components.l - first.luv_components.l, 2.f) + 
                         pow (second.luv_components.u - first.luv_components.u, 2.f) +
                         pow (second.luv_components.v - first.luv_components.v, 2.f), 0.5f
 
                     );
+        
     }
 };

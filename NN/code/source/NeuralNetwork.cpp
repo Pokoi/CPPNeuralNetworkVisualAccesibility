@@ -1,5 +1,88 @@
 #include <NeuralNetwork.hpp>
 
+
+/**
+@brief Creates a neural network with the data of a binary file
+@param path The path of the file with the data
+*/
+NeuralNetwork::NeuralNetwork(std::string path)
+{  
+    std::ifstream stream;
+
+    stream.open("../../assets/data/data.dat");
+    std::string content;
+    std::getline(stream, content); 
+    stream.close();
+      
+    BinaryData* data = new BinaryData();
+    data->read(content);
+
+    this->layers = new Layer * [3];
+
+    // The proposed method only has 3 layers connected in a particular way
+    // The first or input layer
+    initialize_layer(0, data->first_layer_neurons, 0);
+    // The second or hidden layer
+    initialize_layer(1, data->first_layer_neurons / 3, data->first_layer_neurons);
+    // The third or output layer
+    initialize_layer(2, data->first_layer_neurons, data->first_layer_neurons / 3);
+
+    // Set the wa, wb, wc 
+    Neuron** start = layers[1]->get_neurons();
+    Neuron** end = start + (data->first_layer_neurons / 3);
+
+    while (start < end)
+    {
+        (*start)->get_weights()[0] = data->wa;
+        (*start)->get_weights()[1] = data->wb;
+        (*start)->get_weights()[2] = data->wc;
+
+        ++start;
+    }
+
+    // Set the wd, we, wf
+    start = layers[2]->get_neurons();
+    end = start + (data->first_layer_neurons);
+
+    while (start < end)
+    {
+        (*start)->get_weights()[0] = data->wd;
+        (*(start + 1))->get_weights()[0] = data->we;
+        (*(start + 2))->get_weights()[0] = data->wf;
+
+        start += 3;
+    }
+
+
+    delete data;
+}
+
+/**
+@brief Export the neural network data to a binary file
+@param path The path of the file where the data will be exported
+*/
+void NeuralNetwork::export_network(std::string path)
+{
+    BinaryData* data = new BinaryData();
+    data->wa = layers[1]->get_neurons()[0]->get_weights()[0];
+    data->wb = layers[1]->get_neurons()[0]->get_weights()[1];
+    data->wc = layers[1]->get_neurons()[0]->get_weights()[2];
+    data->wd = layers[2]->get_neurons()[0]->get_weights()[0];
+    data->we = layers[2]->get_neurons()[1]->get_weights()[0];
+    data->wf = layers[2]->get_neurons()[2]->get_weights()[0];
+
+    std::ofstream stream("../../assets/data/data.dat");
+    
+    data->first_layer_neurons = layers[0]->get_neurons_size();
+    std::cout<< data->to_string();
+
+    stream << data->to_string();
+
+    stream.close();      
+
+    delete data;
+}
+
 /**
 @brief Calculates the value of each neuron by the feed_forward process. The output is stored in the given parameter.
 @param inputs A pointer to the first input
@@ -48,8 +131,11 @@ void NeuralNetwork::feed_forward(float* inputs, float* output)
     end = start + layers[1]->get_neurons_size();
 
     Neuron* previous_layer_start = layers[0]->get_neurons()[0];
+    Neuron* previous_layer_end = previous_layer_start + layers[0]->get_neurons_size();
 
-    while (start < end)
+    int count = 0;
+    
+    while (previous_layer_start < previous_layer_end)
     {
         float value = previous_layer_start->get_value()  * (*start)->get_weights()[0];
         value += (previous_layer_start + 1)->get_value() * (*start)->get_weights()[1];
@@ -59,6 +145,8 @@ void NeuralNetwork::feed_forward(float* inputs, float* output)
 
         ++start;
         previous_layer_start += 3;
+        count++;
+
     }
 
 

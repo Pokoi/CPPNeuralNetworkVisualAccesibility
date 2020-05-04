@@ -40,7 +40,9 @@ public:
 
         while (start < end)
         {
-            (*start) = new Neuron(neurons_previous_layer);
+            uint8_t weights = neurons_previous_layer / neurons_count;
+            weights = weights >= 1 ? weights : 1;
+            (*start) = new Neuron(weights);
             ++start;
         }
     }

@@ -1,6 +1,55 @@
 #pragma once
 
 #include <Layer.hpp>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <sstream>
+
+struct BinaryData
+{
+    float wa;
+    float wb;
+    float wc;
+    float wd;
+    float we;
+    float wf;
+
+    uint32_t first_layer_neurons;
+
+    std::string to_string()
+    {
+        return  std::to_string(wa) + "&" +
+                std::to_string(wb) + "&" +
+                std::to_string(wc) + "&" +
+                std::to_string(wd) + "&" +
+                std::to_string(we) + "&" +
+                std::to_string(wf) + "&" +
+                std::to_string(first_layer_neurons);
+                            
+    }
+
+    void read(std::string s)
+    {
+        std::stringstream test(s);
+        std::string segment;
+        std::vector<std::string> collection;
+
+        while (std::getline(test, segment, '&'))
+        {
+            collection.push_back(segment);
+        }
+
+        wa = std::stof(collection[0]);
+        wb = std::stof(collection[1]);
+        wc = std::stof(collection[2]);
+        wd = std::stof(collection[3]);
+        we = std::stof(collection[4]);
+        wf = std::stof(collection[5]);
+        first_layer_neurons = std::stoul(collection[6]);        
+    }
+};
 
 class NeuralNetwork
 {
@@ -26,10 +75,22 @@ public:
         // The first or input layer
         initialize_layer(0, first_layer_neurons, 0);
         // The second or hidden layer
-        initialize_layer(1, first_layer_neurons / 3, first_layer_neurons);
+        initialize_layer(1, uint32_t (first_layer_neurons / 3), first_layer_neurons);
         // The third or output layer
-        initialize_layer(2, first_layer_neurons, first_layer_neurons / 3);
+        initialize_layer(2, first_layer_neurons, uint32_t (first_layer_neurons / 3));
     }
+
+    /**
+    @brief Creates a neural network with the data of a binary file
+    @param path The path of the file with the data
+    */
+    NeuralNetwork(std::string path);
+
+    /**
+    @brief Export the neural network data to a binary file
+    @param path The path of the file where the data will be exported
+    */
+    void export_network(std::string path);
 
     /**
     @brief Releases the dynamic memory
@@ -101,3 +162,4 @@ private:
     }
 
 };
+

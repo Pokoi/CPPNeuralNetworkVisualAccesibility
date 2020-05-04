@@ -1,10 +1,12 @@
 #pragma once
 
-#include <QtCore/QCoreApplication>
+
+#include <qguiapplication.h>
 #include <Image.hpp>
 #include <NeuralNetwork.hpp>
+#include <iostream>
 
-class NeuralNetworkApplication : public QCoreApplication
+class NeuralNetworkApplication : public QGuiApplication
 {
 private:
 
@@ -20,16 +22,22 @@ public:
     /**
     @brief Creates an instance of the application
     */
-    NeuralNetworkApplication(int& argc, char** argv) : QCoreApplication(argc, argv)
+    NeuralNetworkApplication(int& argc, char** argv) : QGuiApplication(argc, argv)
     {
-        type = impairment_types::DEUTERANOPIA;
+        type = impairment_types::DEUTERANOPIA;       
+       
+        //NeuralNetwork net(500 * 500 * 3);
+       //net.export_network("../../assets/data/data.dat");
 
-        Image test("D:/Repositorios/CPPNeuralNetworkVisualAccesibility/NN/assets/training_dataset/0.png");
+        training(500, 500);
+        /*
+        Image test("/../../assets/training_dataset/0.png");
         Image sobeled(test.get_width(), test.get_height());
-
+        
         test.sobel_colour(sobeled);
-        sobeled.export_image("D:/Repositorios/CPPNeuralNetworkVisualAccesibility/NN/assets/generated/0.png");
-
+        sobeled.export_image("/../../assets/generated/0.png");
+        */
+        std::cout << std::endl << "Done! :)";
     }
 
     /**
@@ -39,8 +47,8 @@ public:
     */
     void training(uint16_t image_width, uint16_t image_height)
     {
-        uint16_t dataset_count = 100;
-        uint16_t training_iterations = 10;
+        uint16_t dataset_count = 5;
+        uint16_t training_iterations = 1;
         std::string path = "../../assets/training_dataset/";
 
         uint32_t size = image_width * image_height * 3;
@@ -51,8 +59,7 @@ public:
 
 
         // Load data from parsed network
-        NeuralNetwork net(size * 3);
-
+        NeuralNetwork net("../../assets/data/data.dat");
 
         // Training
         for (uint16_t i = 0; i < training_iterations; ++i)
@@ -76,6 +83,7 @@ public:
 
         // Save the neural network values in file
 
+        net.export_network("/../../assets/data/data.dat");
 
         // Frees the memory
         delete[] neural_network_input;
@@ -211,6 +219,7 @@ public:
     {
         return original < min ? min : original > max ? max : original;
     }
+
 
 
 };

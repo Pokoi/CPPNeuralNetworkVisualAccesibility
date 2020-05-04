@@ -28,7 +28,7 @@ public:
     Neuron(uint8_t weigths_size) 
     {
         weights.size    = weigths_size;
-        weights.values  = new float [weigths_size];
+        weights.values  = new float [weigths_size];        
 
         float * start   = weights.values;
         float * end     = start + weights.size;

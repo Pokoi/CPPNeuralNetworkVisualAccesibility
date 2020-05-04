@@ -69,6 +69,9 @@ public:
 
     } luv_components;
 
+    Pixel()
+    {}
+
     /**
     @brief Generates the luv components in base of rgb values
     */

@@ -53,15 +53,16 @@ Image::Image(std::string path)
 */
 void Image::blur(Image& output)
 {
-    output = Image(width, height);
-
+   
     Pixel* start    = output.get_pixels();
-    Pixel* end      = start + output.get_width() * output.get_height();
+    Pixel* end;
     Pixel* original_iterator = pixels;
 
     float red   = 0.f;
     float green = 0.f;
     float blue  = 0.f;
+
+    uint32_t count = 0;
 
     // The critical rows are the first one and last one because they have no previous or next one.
     // They have to be calculated separatly
@@ -81,9 +82,11 @@ void Image::blur(Image& output)
 
     ++original_iterator;
     ++start;
+    ++count;
 
+    end = start + width;
     // The rest of the first row
-    while (start < start + width)
+    while (start < end)
     {
         red     = 0.f;
         green   = 0.f;
@@ -103,6 +106,8 @@ void Image::blur(Image& output)
         ++original_iterator;
         ++start;
     }
+
+    end = output.get_pixels() + output.get_width() * output.get_height() - width;
 
     // The body of the image
     while (start < end - width)
@@ -172,25 +177,26 @@ void Image::blur(Image& output)
 @param output The image where store the new image
 */
 
-void Image::sobel_colour(Image& output)
+void Image::sobel_colour(Image & output)
 {
-    output = Image(width, height);
+   // output = Image(width, height);
 
     Pixel* start = pixels;
-    Pixel* end = start + width * height;
+    Pixel* end = start + width * height - 1;
+      
 
     // set the start in the second row and the end in the previous of the last row
     // This avoid extra conditional operations and the lost of information is not relevant
     start += width;
-    end -= width;
+    end -= (width+1);
 
     float* buffer = new float[width * height];
+    float* writer = buffer;
 
     float min = 1.f;
-    float max = 0.f;
-
-    int x, y;
-
+    float max = 0.f;  
+    
+    
     while (start < end)
     {
         float gx =
@@ -204,30 +210,39 @@ void Image::sobel_colour(Image& output)
             1.f * colour_difference(*(start + 1 - width), *(start + width + 1));
 
         float val = pow(gx * gx + gy * gy, 0.5);
-        *buffer = val;
+        *writer = val;
+
+        if (isinf(val))
+        {
+            val = val;
+        }
 
         max = val > max ? val : max;
         min = val < min ? val : min;
 
-        ++buffer;
+        ++writer;
         ++start;
     }
+    Pixel* iterator = output.get_pixels();
+    
+    int count = 0;
+    float* last_value = buffer + (width * height);
+    writer = buffer;
 
-    Pixel* iterator = output.get_pixels() + width * height - 1;
-
-    while (buffer)
+    while (writer < last_value)
     {
-        *buffer = ((*buffer) - min) / max - min;
+        *writer = ((*writer) - min) / max - min;
 
-        iterator->rgb_components.red = *buffer;
-        iterator->rgb_components.green = *buffer;
-        iterator->rgb_components.blue = *buffer;
+        iterator->rgb_components.red    = (*writer);
+        iterator->rgb_components.green  = (*writer);
+        iterator->rgb_components.blue   = (*writer);
 
-        --buffer;
-        --iterator;
+        ++writer;
+        ++iterator;
+        ++count;
     }
-
+    
     // Free the memory
     delete [] buffer;
-
+    
 }
