@@ -58,7 +58,7 @@ private:
     Layer** layers;
     uint32_t layers_count;
     float learning_rate = 0.01f;
-    float error = 1.f;
+       
 
 public:
 
@@ -92,7 +92,10 @@ public:
     */
     void export_network(std::string path);
        
-
+    Layer** get_layers()
+    {
+        return layers;
+    }
 
     /**
     @brief Releases the dynamic memory
@@ -106,15 +109,7 @@ public:
 
         delete[] layers;
     }
-
-    /**
-    @brief Gets the error
-    @return The error
-    */
-    float get_error() 
-    { 
-        return error;
-    }
+    
 
     /**
     @brief Calculates the value of each neuron by the feed_forward process. The output is stored in the given parameter.

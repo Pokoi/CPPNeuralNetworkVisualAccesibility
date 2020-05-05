@@ -14,7 +14,7 @@ private:
     float* neural_network_output = nullptr;
     float* neural_network_desired_output= nullptr;
 
-    enum impairment_types {DEUTERANOPIA, PROTANOPIA};
+    enum impairment_types {DEUTERANOPIA, PROTANOPIA, TRITANOPIA};
     impairment_types type;
 
     bool exporting = false;
@@ -29,15 +29,15 @@ public:
     {
         type = impairment_types::DEUTERANOPIA;       
        
-        // Generate a random values
-        /*
+        // Generate a random values        
         NeuralNetwork net(500 * 500 * 3);
-        net.export_network("../../assets/data/data.dat");
-        */
+        net.export_network("../../assets/data/data.dat");        
 
+        // Train
+        training(500, 500);
+
+        // Generate a test
         transform("test.png");
-
-        //training(500, 500);
         
         std::cout << std::endl << "Done! :)";
     }
@@ -54,7 +54,6 @@ public:
     @param filename The name of the image to transform
     */
     void transform(std::string filename);
-
 
     /**
     @brief Extract the input for the neural network from a image data
@@ -92,7 +91,7 @@ public:
         {
             *start       = pixels->rgb_components.red;
             *(start + 1) = pixels->rgb_components.green;
-            *(start + 2) = pixels->rgb_components.blue;            
+            *(start + 2) = pixels->rgb_components.blue;             
 
             ++pixels;
             start += 3;
@@ -105,7 +104,7 @@ public:
     @param original The original image
     @param output The output of the neural network. The values will be overriden with the new ones 
     */
-    void parse_output(Image& original, float* output);
+    void parse_output(Image& original, float* output, Image& output_image);
 
     /**
     @brief Limit the value to the given limits
@@ -114,11 +113,17 @@ public:
     @param max The max value
     @return The limited value
     */
-    float limit(float& original, float min, float max)
+    float limit(float original, float min, float max)
     {
         return original < min ? min : original > max ? max : original;
     }
 
+    /**
+    @brief Calculates the values of lms daltonization process
+    @param original The original image
+    @param output_values The collection where store the values
+    */
+    void lms_daltonization(Image& original, float* output_values);
    
 
 

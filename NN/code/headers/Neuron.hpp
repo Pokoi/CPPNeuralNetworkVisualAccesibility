@@ -76,6 +76,16 @@ public:
     }
 
     /**
+    @brief Sets a weight at a index
+    @param weight The weight to add
+    @param index The index
+    */
+    void set_weight(float weight, size_t index)
+    {
+        weights.values [index] = weight;
+    }
+
+    /**
      * @brief Gets the amount of weights of this neuron
      * @return The amount of weights of this neuron
     */

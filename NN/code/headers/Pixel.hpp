@@ -199,4 +199,86 @@ public:
 
     }
 
+    void lms_protanopia()
+    {
+        float L = 17.8824f * rgb_components.red + 43.5161f * rgb_components.green + 4.11935f * rgb_components.blue;
+        float M = 3.45565f * rgb_components.red + 27.1554f * rgb_components.green + 3.86714f * rgb_components.blue;
+        float S = 0.0299566f * rgb_components.red + 0.184309f * rgb_components.green + 1.46709f * rgb_components.blue;
+
+        float Lp = 0.f * L + 2.02344f * M + -2.52581f * S;
+        float Mp = 0.f * L + 1.f * M + 0.f * S;
+        float Sp = 0.f * L + 0.f * M + 1.f * S;
+
+        float Ri = 0.0809444479f * Lp + -0.130504409f * Mp + 0.116721066f * Sp;
+        float Gi = 0.113614708f * Lp + -0.0102485335f * Mp + 0.0540193266f * Sp;
+        float Bi = -0.000365296938f * Lp + -0.00412161469f * Mp + 0.693511405 * Sp;
+
+        float Dr = rgb_components.red - Ri;
+        float Dg = rgb_components.green - Gi;
+        float Db = rgb_components.blue - Bi;
+
+        float Rm = 0.f * Dr + 0.f * Dg + 0.f * Db;
+        float Gm = 0.7f * Dr + 1.f * Dg + 0.f * Db;
+        float Bm = 0.7f * Dr + 0.f * Dg + 1.f * Db;
+
+        rgb_components.red += Rm;
+        rgb_components.green += Gm;
+        rgb_components.blue += Bm;        
+    }
+
+    void lms_deuteranopia()
+    {
+        float L = 17.8824f * rgb_components.red + 43.5161f * rgb_components.green + 4.11935f * rgb_components.blue;
+        float M = 3.45565f * rgb_components.red + 27.1554f * rgb_components.green + 3.86714f * rgb_components.blue;
+        float S = 0.0299566f * rgb_components.red + 0.184309f * rgb_components.green + 1.46709f * rgb_components.blue;
+
+        float Ld = 1.f * L + 0.f * M + 0.f * S;
+        float Md = 0.49421f * L + 0.f * M + 1.24827f * S;
+        float Sd = 0.f * L + 0.f * M + 1.f * S;
+
+        float Ri = 0.0809444479f * Ld + -0.130504409f * Md + 0.116721066f * Sd;
+        float Gi = 0.113614708f * Ld + -0.0102485335f * Md + 0.0540193266f * Sd;
+        float Bi = -0.000365296938f * Ld + -0.00412161469f * Md + 0.693511405 * Sd;
+
+        float Dr = rgb_components.red - Ri;
+        float Dg = rgb_components.green - Gi;
+        float Db = rgb_components.blue - Bi;
+
+        float Rm = 1.f * Dr + 0.7f * Dg + 0.f * Db;
+        float Gm = 0.0f * Dr + 0.f * Dg + 0.f * Db;
+        float Bm = 0.f * Dr + 0.7f * Dg + 1.f * Db;
+
+        rgb_components.red += Rm;
+        rgb_components.green += Gm;
+        rgb_components.blue += Bm;        
+    }
+
+    void lms_tritanopia()
+    {
+        float L = 17.8824f * rgb_components.red + 43.5161f * rgb_components.green + 4.11935f * rgb_components.blue;
+        float M = 3.45565f * rgb_components.red + 27.1554f * rgb_components.green + 3.86714f * rgb_components.blue;
+        float S = 0.0299566f * rgb_components.red + 0.184309f * rgb_components.green + 1.46709f * rgb_components.blue;
+
+        float Lt = 1.f * L + 0.f * M + 0.f * S;
+        float Mt = 0.f * L + 1.f * M + 0.f * S;
+        float St = -0.395913f * L + 0.801109f * M + 0.f * S;
+
+        float Ri = 0.0809444479f * Lt + -0.130504409f * Mt + 0.116721066f * St;
+        float Gi = 0.113614708f * Lt + -0.0102485335f * Mt + 0.0540193266f * St;
+        float Bi = -0.000365296938f * Lt + -0.00412161469f * Mt + 0.693511405 * St;
+
+        float Dr = rgb_components.red - Ri;
+        float Dg = rgb_components.green - Gi;
+        float Db = rgb_components.blue - Bi;
+
+        float Rm = 1.f * Dr + 0.f * Dg + 0.7f * Db;
+        float Gm = 0.0f * Dr + 1.f * Dg + 0.7f * Db;
+        float Bm = 0.f * Dr + 0.f * Dg + 0.f * Db;
+
+        rgb_components.red += Rm;
+        rgb_components.green += Gm;
+        rgb_components.blue += Bm;
+    }
+       
+
 };

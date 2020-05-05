@@ -15,7 +15,7 @@ void Image::export_image(std::string path)
     {
         for (uint16_t j = 0; j < height; ++j)
         {
-            Pixel& pixel = pixels[j * width + i];
+            Pixel pixel = pixels[j * width + i];
             value = qRgb(pixel.rgb_components.red * 255, pixel.rgb_components.green * 255, pixel.rgb_components.blue * 255);
             img.setPixel(i, j, value);
         }
@@ -110,7 +110,7 @@ void Image::blur(Image& output)
     end = output.get_pixels() + output.get_width() * output.get_height() - width;
 
     // The body of the image
-    while (start < end - width)
+    while (start < end)
     {
         red     = 0.f;
         green   = 0.f;
@@ -134,6 +134,7 @@ void Image::blur(Image& output)
         ++start;
     }
 
+    end = output.get_pixels() + output.get_width() * output.get_height();
     // The last row of pixels
     while (start < end - 1)
     {
@@ -182,12 +183,12 @@ void Image::sobel_colour(Image & output)
    // output = Image(width, height);
 
     Pixel* start = pixels;
-    Pixel* end = start + width * height - 1;
+    Pixel* end = start + width * height;
       
 
     // set the start in the second row and the end in the previous of the last row
     // This avoid extra conditional operations and the lost of information is not relevant
-    start += width;
+    start += width + 1;
     end -= (width+1);
 
     float* buffer = new float[width * height];
@@ -210,7 +211,7 @@ void Image::sobel_colour(Image & output)
             1.f * colour_difference(*(start + 1 - width), *(start + width + 1));
 
         float val = pow(gx * gx + gy * gy, 0.5);
-        *writer = val;        
+        *writer = val;         
 
         max = val > max ? val : max;
         min = val < min ? val : min;
@@ -218,6 +219,7 @@ void Image::sobel_colour(Image & output)
         ++writer;
         ++start;
     }
+
     Pixel* iterator = output.get_pixels();
     
     int count = 0;
@@ -226,12 +228,13 @@ void Image::sobel_colour(Image & output)
 
     while (writer < last_value)
     {
-        *writer = ((*writer) - min) / max - min;
+        //if(max - min != 0.f)
+        //*writer = ((*writer) - min) / max - min;
 
         iterator->rgb_components.red    = (*writer);
         iterator->rgb_components.green  = (*writer);
         iterator->rgb_components.blue   = (*writer);
-
+       
         ++writer;
         ++iterator;
         ++count;
