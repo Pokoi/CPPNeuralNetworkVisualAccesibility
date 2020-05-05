@@ -210,12 +210,7 @@ void Image::sobel_colour(Image & output)
             1.f * colour_difference(*(start + 1 - width), *(start + width + 1));
 
         float val = pow(gx * gx + gy * gy, 0.5);
-        *writer = val;
-
-        if (isinf(val))
-        {
-            val = val;
-        }
+        *writer = val;        
 
         max = val > max ? val : max;
         min = val < min ? val : min;

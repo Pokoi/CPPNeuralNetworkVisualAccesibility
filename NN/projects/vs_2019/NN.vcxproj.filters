@@ -30,6 +30,9 @@
     <ClCompile Include="..\..\code\source\NeuralNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\code\source\NeuralNetworkApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\code\headers\NeuralNetworkApplication.hpp">

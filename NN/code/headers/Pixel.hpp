@@ -77,9 +77,17 @@ public:
     */
     void convert_rgb_to_luv()
     {
-        float buffer[3];
-        convert_rgb_to_xyz(buffer);
-        convert_xyz_to_luv(buffer);
+        if (rgb_components.red == 0 && rgb_components.green == 0 && rgb_components.blue == 0)
+        {
+            luv_components.l = luv_components.u = luv_components.v = 0.f;
+        }
+
+        else
+        {
+            float buffer[3];
+            convert_rgb_to_xyz(buffer);
+            convert_xyz_to_luv(buffer);
+        }
     }
     
     /**
@@ -187,7 +195,8 @@ public:
                                   : k * yr;             
 
         luv_components.u = 13.0f * luv_components.l * (us - usr);
-        luv_components.v = 13.0f * luv_components.l * (vs - vsr);        
+        luv_components.v = 13.0f * luv_components.l * (vs - vsr);      
+
     }
 
 };

@@ -18,7 +18,7 @@ NeuralNetwork::NeuralNetwork(std::string path)
     data->read(content);
 
     this->layers = new Layer * [3];
-
+    this->layers_count = 3;
     // The proposed method only has 3 layers connected in a particular way
     // The first or input layer
     initialize_layer(0, data->first_layer_neurons, 0);
@@ -130,16 +130,16 @@ void NeuralNetwork::feed_forward(float* inputs, float* output)
     start = layers[1]->get_neurons();
     end = start + layers[1]->get_neurons_size();
 
-    Neuron* previous_layer_start = layers[0]->get_neurons()[0];
-    Neuron* previous_layer_end = previous_layer_start + layers[0]->get_neurons_size();
+    Neuron** previous_layer_start = layers[0]->get_neurons();
+    Neuron** previous_layer_end = previous_layer_start + layers[0]->get_neurons_size();
 
     int count = 0;
     
     while (previous_layer_start < previous_layer_end)
     {
-        float value = previous_layer_start->get_value()  * (*start)->get_weights()[0];
-        value += (previous_layer_start + 1)->get_value() * (*start)->get_weights()[1];
-        value += (previous_layer_start + 2)->get_value() * (*start)->get_weights()[2];
+        float value = (*previous_layer_start)->get_value()  * (*start)->get_weights()[0];
+        value += (*(previous_layer_start + 1))->get_value() * (*start)->get_weights()[1];
+        value += (*(previous_layer_start + 2))->get_value() * (*start)->get_weights()[2];
 
         (*start)->set_value(activate(value, layers[1]->get_activation()));
 
@@ -154,28 +154,28 @@ void NeuralNetwork::feed_forward(float* inputs, float* output)
     start = layers[2]->get_neurons();
     end = start + layers[2]->get_neurons_size();
 
-    previous_layer_start = layers[1]->get_neurons()[0];
+    previous_layer_start = layers[1]->get_neurons();
 
     while (start < end)
     {
         // This process can be in a loop (each last hidden layer neuron generates 3 output neurons)
         // Here the loop is omitted to prevent the conditional process
 
-        float value = previous_layer_start->get_value() * (*start)->get_weights()[0];
+        float value = (*previous_layer_start)->get_value() * (*start)->get_weights()[0];
         value = activate(value, layers[2]->get_activation());
         (*start)->set_value(value);
         *output = value;
         ++start;
         ++output;
 
-        value = previous_layer_start->get_value() * (*start)->get_weights()[1];
+        value = (*previous_layer_start)->get_value() * (*start)->get_weights()[1];
         value = activate(value, layers[2]->get_activation());
         (*start)->set_value(value);
         *output = value;
         ++start;
         ++output;
 
-        value = previous_layer_start->get_value() * (*start)->get_weights()[2];
+        value = (*previous_layer_start)->get_value() * (*start)->get_weights()[2];
         value = activate(value, layers[2]->get_activation());
         (*start)->set_value(value);
         *output = value;
@@ -198,8 +198,8 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
     error = 0.f;
     float wa = 0.f, wb = 0.f, wc = 0.f, wd = 0.f, we = 0.f, wf = 0.f;
 
-    Neuron** start = layers[layers_count - 1]->get_neurons();
-    Neuron** end = start + layers[layers_count - 1]->get_neurons_size();
+    Neuron** start = layers[2]->get_neurons();
+    Neuron** end = start + layers[2]->get_neurons_size();
     float value = 0.f;
 
     // Output adjustment
@@ -230,27 +230,34 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
 
 
     */
-
+    int count = 0;
     while (start < end)
     {
-        value = (*output) - (*desired);
+        value = (*output) - (*desired);       
 
         (*start)->set_delta(value);
         (*(start + 1))->set_delta(value);
         (*(start + 2))->set_delta(value);
 
         wd += (*start)->get_weights()[0] - (value * learning_rate * (*start)->get_value());
-        we += (*start + 1)->get_weights()[0] - (value * learning_rate * (*start + 1)->get_value());
-        wf += (*start + 2)->get_weights()[0] - (value * learning_rate * (*start + 2)->get_value());
+        we += (*(start + 1))->get_weights()[0] - (value * learning_rate * (*(start + 1))->get_value());
+        wf += (*(start + 2))->get_weights()[0] - (value * learning_rate * (*(start + 2))->get_value());
+
+
+        if (isnan(wd) || isnan(we) || isnan(wf))
+        {
+            int i = 0;
+        }
 
         error += std::abs(value);
 
         start   += 3;
         output  += 3;
         desired += 3;
+        count += 3;
     }
 
-    float divider = 1.f / float(layers[layers_count - 1]->get_neurons_size());
+    float divider = 1.f / float(layers[2]->get_neurons_size());
 
     start = layers[layers_count - 1]->get_neurons();
     wd *= divider;
@@ -288,8 +295,8 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
         (*start)->set_delta(value);
 
         wa += (*start)->get_weights()[0] - (value * learning_rate * (*start)->get_value());
-        wb += (*start)->get_weights()[1] - (value * learning_rate * (*start + 1)->get_value());
-        wc += (*start)->get_weights()[2] - (value * learning_rate * (*start + 2)->get_value());
+        wb += (*start)->get_weights()[1] - (value * learning_rate * (*start)->get_value());
+        wc += (*start)->get_weights()[2] - (value * learning_rate * (*start)->get_value());
 
         ++start;
     }

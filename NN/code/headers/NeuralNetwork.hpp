@@ -91,6 +91,8 @@ public:
     @param path The path of the file where the data will be exported
     */
     void export_network(std::string path);
+       
+
 
     /**
     @brief Releases the dynamic memory
