@@ -1,5 +1,5 @@
 #include <NeuralNetwork.hpp>
-
+#include <iostream>
 
 /**
 @brief Creates a neural network with the data of a binary file
@@ -46,12 +46,10 @@ NeuralNetwork::NeuralNetwork(std::string path)
 
     while (start < end)
     {
-
         (*start)->set_weight(data->wd, 0);
         (*(start + 1))->set_weight(data->we, 0);
-        (*(start + 2))->set_weight(data->wf, 0);      
-               
-
+        (*(start + 2))->set_weight(data->wf, 0);    
+              
         start += 3;
     }    
 }
@@ -90,16 +88,19 @@ void NeuralNetwork::export_network(std::string path)
 @param inputs A pointer to the first input
 @param output A pointer to the first output
 */
-void NeuralNetwork::feed_forward(float* inputs, float* outputs)
+void NeuralNetwork::feed_forward(std::vector<float>& inputs, std::vector<float>& outputs)
 {    
+    int iterator = 0;
+
     // Set the input
     Neuron**  start = layers[0]->get_neurons();
     Neuron** end = start + layers[0]->get_neurons_size();
 
     while (start < end)
     {
-        (*start)->set_value(*inputs);
-        ++inputs;
+        (*start)->set_value(inputs[iterator]);
+        
+        ++iterator;
         ++start;
     }
 
@@ -134,33 +135,30 @@ void NeuralNetwork::feed_forward(float* inputs, float* outputs)
 
     Neuron** previous_layer_start = layers[0]->get_neurons();
     Neuron** previous_layer_end = previous_layer_start + layers[0]->get_neurons_size();
-
+        
     int count = 0;
     
     while (start < end)
     {
         float value = (*previous_layer_start)->get_value()  * (*start)->get_weights()[0];
         value += (*(previous_layer_start + 1))->get_value() * (*start)->get_weights()[1];
-        value += (*(previous_layer_start + 2))->get_value() * (*start)->get_weights()[2];
+        value += (*(previous_layer_start + 2))->get_value() * (*start)->get_weights()[2];       
 
-        //(*start)->set_value(activate(value, layers[1]->get_activation()));
-               
-
-        (*start)->set_value(value);
+        (*start)->set_value(activate(value, layers[1]->get_activation())); 
+        //(*start)->set_value(value);
 
         ++start;
         previous_layer_start += 3;
         count++;
-
     }
 
     // Calculate the output layer
     start = layers[2]->get_neurons();
     end = start + layers[2]->get_neurons_size();
 
-    previous_layer_start = layers[1]->get_neurons();
+    previous_layer_start = layers[1]->get_neurons();    
 
-    float* output = outputs;
+    iterator = 0;
 
     while (start < end)
     {
@@ -168,44 +166,57 @@ void NeuralNetwork::feed_forward(float* inputs, float* outputs)
         // Here the loop is omitted to prevent the conditional process
 
         float value = (*previous_layer_start)->get_value() * (*start)->get_weights()[0];
-        //value = activate(value, layers[2]->get_activation());        
+        value = activate(value, layers[2]->get_activation());        
         (*start)->set_value(value);
-        *output = value;
+        outputs[iterator] = value;
         ++start;
-        ++output;
+        ++iterator;
         
+        if (isnan(value))
+        {
+            int i = 0;
+        }
+
         value = (*previous_layer_start)->get_value() * (*start)->get_weights()[0];
-        //value = activate(value, layers[2]->get_activation());
+        value = activate(value, layers[2]->get_activation());
         
         (*start)->set_value(value);
-        *output = value;
+        outputs[iterator] = value;
         ++start;
-        ++output;
+        ++iterator;
                 
+        if (isnan(value))
+        {
+            int i = 0;
+        }
 
         value = (*previous_layer_start)->get_value() * (*start)->get_weights()[0];
         //value = activate(value, layers[2]->get_activation());
         
         (*start)->set_value(value);
-        *output = value;
+        outputs[iterator] = value;
         ++start;
-        ++output;
-               
+        ++iterator;
+        
+        if (isnan(value))
+        {
+            int i = 0;
+        }
 
         ++previous_layer_start;
     }
 
 }
 
-
 /**
 @brief Calculates the backpropagation
 @param output The output values of the information proccess of the feed_forward output
 @param desired The desired values
 */
-void NeuralNetwork::back_propagation(float* output, float* desired)
+void NeuralNetwork::back_propagation(std::vector<float> & output, std::vector<float> & desired)
 {
-    
+    int iterator = 0;
+
     float wa = 0.f, wb = 0.f, wc = 0.f, wd = 0.f, we = 0.f, wf = 0.f;
 
     Neuron** start = layers[2]->get_neurons();
@@ -242,29 +253,31 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
     */
     
     while (start < end)
-    {
-        value = ((*output) - (*desired));         
-               
-        (*start)->set_delta(value);
-        (*(start + 1))->set_delta(value);
-        (*(start + 2))->set_delta(value);
+    {        
+        (*start)      ->set_delta( output[iterator] - desired[iterator]);
+        (*(start + 1))->set_delta( output[iterator + 1] - desired[iterator + 1]);
+        (*(start + 2))->set_delta( output[iterator + 2] - desired[iterator + 2]);
 
-        wd += (*start)->get_weights()[0] + (value * learning_rate * (*start)->get_value());
-        we += (*(start + 1))->get_weights()[0] + (value * learning_rate * (*(start + 1))->get_value());
-        wf += (*(start + 2))->get_weights()[0] + (value * learning_rate * (*(start + 2))->get_value());
+        wd += (*start)->get_weights()[0] + ((*start)->get_delta() * learning_rate * (*start)->get_value());
+        we += (*(start + 1))->get_weights()[0] + ((*(start+1))->get_delta() * learning_rate * (*(start + 1))->get_value());
+        wf += (*(start + 2))->get_weights()[0] + ((*(start + 2))->get_delta() * learning_rate * (*(start + 2))->get_value());
+        
+        if (isinf(wd) || isinf(we) || isinf(wf))
+        {
+            int i = 0;
+        }
 
-        start   += 3;
-        output  += 3;
-        desired += 3;        
+        start     += 3;
+        iterator  += 3;              
     }
 
-    float divider = 1.f / float(layers[2]->get_neurons_size());
+    //float divider = 1.f / float(layers[2]->get_neurons_size());
       
-    start = layers[layers_count - 1]->get_neurons();
+    start = layers[2]->get_neurons();
     
-    wd *= divider;
+    /*wd *= divider;
     we *= divider;
-    wf *= divider;
+    wf *= divider;*/
 
     while (start < end)
     {
@@ -274,6 +287,11 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
 
         start += 3;
     }   
+
+    if (isnan(wd) || isnan(we) || isnan(wf))
+    {
+        int i = 0;
+    }
 
     // Hidden layers
     // In the proposed method there is only one hidden layer. If this is not your case, you have
@@ -297,14 +315,20 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
         wb += (*start)->get_weights()[1] + (value * learning_rate * (*start)->get_value());
         wc += (*start)->get_weights()[2] + (value * learning_rate * (*start)->get_value());
 
+        if (isnan(wa) || isnan(wb) || isnan(wc))
+        {
+            int i = 0;
+        }
+
         ++start;
+        next_layer_start += 3;
     }
     
-    divider = 1.f / float(layers[1]->get_neurons_size());
+    //divider = 1.f / float(layers[1]->get_neurons_size());
 
-    wa *= divider;
+    /*wa *= divider;
     wb *= divider;
-    wc *= divider;
+    wc *= divider;*/
     start = layers[1]->get_neurons();
 
     while (start < end)
@@ -315,5 +339,47 @@ void NeuralNetwork::back_propagation(float* output, float* desired)
 
         ++start;
     }
+}
+
+/**
+@brief Training with genetic algorithim
+@param output The feed forward output values
+@param desired The desired output values
+*/
+void NeuralNetwork::genetic_training(std::vector<float>& output, std::vector<float>& desired)
+{
+    // Set the own cromosome 
+    BinaryData cromosome1;
+
+    // Set the wa, wb, wc 
+    Neuron** start = layers[1]->get_neurons();
+    Neuron** end = start + (cromosome1.first_layer_neurons / 3);
+
+    while (start < end)
+    {
+        (*start)->set_weight(cromosome1.wa, 0);
+        (*start)->set_weight(cromosome1.wb, 1);
+        (*start)->set_weight(cromosome1.wc, 2);
+
+        ++start;
+    }
+
+    // Set the wd, we, wf
+    start = layers[2]->get_neurons();
+    end = start + (cromosome1.first_layer_neurons);
+
+    while (start < end)
+    {
+        (*start)->set_weight(cromosome1.wd, 0);
+        (*(start + 1))->set_weight(cromosome1.we, 0);
+        (*(start + 2))->set_weight(cromosome1.wf, 0);
+
+        start += 3;
+    }
+
+
+    // Create the other cromosomes
+
+
 
 }

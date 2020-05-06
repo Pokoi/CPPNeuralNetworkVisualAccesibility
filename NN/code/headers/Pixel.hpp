@@ -1,6 +1,7 @@
 #pragma once
 
 #include <math.h>
+#include <algorithm>
 
 /**
 @brief Class that stores the pixel information and allow pixel color space conversions.
@@ -201,9 +202,13 @@ public:
 
     void lms_protanopia()
     {
-        float L = 17.8824f * rgb_components.red + 43.5161f * rgb_components.green + 4.11935f * rgb_components.blue;
-        float M = 3.45565f * rgb_components.red + 27.1554f * rgb_components.green + 3.86714f * rgb_components.blue;
-        float S = 0.0299566f * rgb_components.red + 0.184309f * rgb_components.green + 1.46709f * rgb_components.blue;
+        float r = rgb_components.red;
+        float g = rgb_components.green;
+        float b = rgb_components.blue;
+
+        float L = 17.8824f * r + 43.5161f * g + 4.11935f * b;
+        float M = 3.45565f * r + 27.1554f * g + 3.86714f * b;
+        float S = 0.0299566f * r + 0.184309f * g + 1.46709f * b;
 
         float Lp = 0.f * L + 2.02344f * M + -2.52581f * S;
         float Mp = 0.f * L + 1.f * M + 0.f * S;
@@ -221,16 +226,20 @@ public:
         float Gm = 0.7f * Dr + 1.f * Dg + 0.f * Db;
         float Bm = 0.7f * Dr + 0.f * Dg + 1.f * Db;
 
-        rgb_components.red += Rm;
+        rgb_components.red   += Rm;
         rgb_components.green += Gm;
-        rgb_components.blue += Bm;        
+        rgb_components.blue  += Bm;
     }
 
     void lms_deuteranopia()
     {
-        float L = 17.8824f * rgb_components.red + 43.5161f * rgb_components.green + 4.11935f * rgb_components.blue;
-        float M = 3.45565f * rgb_components.red + 27.1554f * rgb_components.green + 3.86714f * rgb_components.blue;
-        float S = 0.0299566f * rgb_components.red + 0.184309f * rgb_components.green + 1.46709f * rgb_components.blue;
+        float r = rgb_components.red;
+        float g = rgb_components.green;
+        float b = rgb_components.blue;
+
+        float L = 17.8824f * r + 43.5161f * g + 4.11935f * b;
+        float M = 3.45565f * r + 27.1554f * g + 3.86714f * b;
+        float S = 0.0299566f * r + 0.184309f * g + 1.46709f * b;
 
         float Ld = 1.f * L + 0.f * M + 0.f * S;
         float Md = 0.49421f * L + 0.f * M + 1.24827f * S;
@@ -248,16 +257,26 @@ public:
         float Gm = 0.0f * Dr + 0.f * Dg + 0.f * Db;
         float Bm = 0.f * Dr + 0.7f * Dg + 1.f * Db;
 
-        rgb_components.red += Rm;
+        
+        rgb_components.red   = clamp (r + Rm, 0, 1);
+        rgb_components.green = clamp (g + Gm, 0, 1);
+        rgb_components.blue  = clamp (b + Bm, 0, 1);
+
+        rgb_components.red   += Rm;
         rgb_components.green += Gm;
-        rgb_components.blue += Bm;        
+        rgb_components.blue  += Bm;
+       
     }
 
     void lms_tritanopia()
     {
-        float L = 17.8824f * rgb_components.red + 43.5161f * rgb_components.green + 4.11935f * rgb_components.blue;
-        float M = 3.45565f * rgb_components.red + 27.1554f * rgb_components.green + 3.86714f * rgb_components.blue;
-        float S = 0.0299566f * rgb_components.red + 0.184309f * rgb_components.green + 1.46709f * rgb_components.blue;
+        float r = rgb_components.red;
+        float g = rgb_components.green;
+        float b = rgb_components.blue; 
+
+        float L = 17.8824f * r + 43.5161f * g + 4.11935f * b;
+        float M = 3.45565f * r + 27.1554f * g + 3.86714f * b;
+        float S = 0.0299566f * r + 0.184309f * g + 1.46709f * b;
 
         float Lt = 1.f * L + 0.f * M + 0.f * S;
         float Mt = 0.f * L + 1.f * M + 0.f * S;
@@ -275,10 +294,20 @@ public:
         float Gm = 0.0f * Dr + 1.f * Dg + 0.7f * Db;
         float Bm = 0.f * Dr + 0.f * Dg + 0.f * Db;
 
-        rgb_components.red += Rm;
+        rgb_components.red   += Rm;
         rgb_components.green += Gm;
-        rgb_components.blue += Bm;
+        rgb_components.blue  += Bm;
     }
-       
+    
+    /**
+    @brief Clamps a value between 2 values
+    @param value The vale to clamp
+    @param min The min value
+    @param max The max value
+    */
+    float clamp(float value, float min, float max)
+    {
+        return value < min ? min : value > max ? max : value;
+    }
 
 };

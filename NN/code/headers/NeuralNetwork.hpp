@@ -116,15 +116,21 @@ public:
     @param inputs A pointer to the first input
     @param output A pointer to the first output
     */
-    void feed_forward(float* inputs, float* output);
+    void feed_forward(std::vector<float>& inputs, std::vector<float>& output);
 
     /**
     @brief Calculates the backpropagation
     @param output The output values of the information proccess of the feed_forward output
     @param desired The desired values
     */
-    void back_propagation(float* output, float* desired);   
+    void back_propagation(std::vector<float>& output, std::vector<float>& desired);
 
+    /**
+    @brief Training with genetic algorithim
+    @param output The feed forward output values
+    @param desired The desired output values
+    */
+    void genetic_training(std::vector<float>& output, std::vector<float>& desired);
 
 private:
 

@@ -6,6 +6,8 @@
 #include <string>
 #include <qpixmap.h>
 #include <qcolor.h>
+#include <vector>
+
 
 class Image
 {
@@ -15,7 +17,8 @@ private:
     std::uint16_t height;       // uint16_t allows numbers from 0 to 65 635 (2 bytes of memory). 
                                 // This makes uint16_t better than size_t (It's very strange to have images greater than 65k pixels height)
 
-    Pixel * pixels;
+    
+    std::vector<Pixel> pixels;
 
 public:
 
@@ -32,7 +35,7 @@ public:
           ) : 
             width(width),
             height(height),
-            pixels(new Pixel[width * height])
+            pixels(width * height)
     {
         
     }
@@ -59,7 +62,7 @@ public:
     @brief Gets the pixels of the image
     @return The pixel pointer
     */
-    Pixel* get_pixels() { return pixels; }
+    std::vector<Pixel> & get_pixels() { return pixels; }
 
     /**
     @brief Gets a reference to the pixel at a certain index
@@ -96,23 +99,11 @@ public:
     @param pixel The pixel data to apply to all the image pixels
     */
     void fill_image(Pixel& pixel)
-    {
-        Pixel   * start = pixels;
-        Pixel   * end   = pixels + width * height;
-
-        while (start < end)
+    {        
+        for (auto& pixel : pixels)
         {
-            start->rgb_components = pixel.rgb_components;
-            ++start;
-        }        
-    }
-
-    /**
-    @brief Frees memory
-    */
-    ~Image()
-    {
-        //delete[] pixels;
+            pixel.rgb_components = pixel.rgb_components;
+        }   
     }
 
     /**
@@ -122,10 +113,9 @@ public:
     void export_image(std::string path);
 
     /**
-    @brief Blurs the image. New image is stored in the given image container
-    @param output The image where store the new image
+    @brief Blurs the image. 
     */
-    void blur(Image& output);
+    void blur();
 
     /**
     @brief Adds the component values of a given pixel to each given variable. The addition is stored in the given variables
@@ -134,45 +124,29 @@ public:
     @param blue The blue component container
     @param original The pixel with the data
     */
-    void add_components(float& red, float& green, float& blue, Pixel* original)
+    void add_components(float& red, float& green, float& blue, Pixel & original)
     {
-        red     += (original)->rgb_components.red;
-        green   += (original)->rgb_components.green;
-        blue    += (original)->rgb_components.blue;
+        red     += original.rgb_components.red;
+        green   += original.rgb_components.green;
+        blue    += original.rgb_components.blue;
     }
 
     /**
-    @brief Apply a sobel colour effect to the image and store the result in the given image
-    @param output The image where store the new image
+    @brief Apply a sobel colour effect to the image.
     */
-    void sobel_colour(Image& output);
+    void sobel_colour();
 
     float colour_difference(Pixel& first, Pixel& second)
     {
         first.convert_rgb_to_luv();
         second.convert_rgb_to_luv();
-
-        float value = pow(
-            pow(second.luv_components.l - first.luv_components.l, 2.f) +
-            pow(second.luv_components.u - first.luv_components.u, 2.f) +
-            pow(second.luv_components.v - first.luv_components.v, 2.f), 0.5f
-
-            );
-
-        if (isnan(value))
-        {
-            int i = 0;
-        }
-
-        return value;
-
-        /*
+        
        return pow  (
                         pow (second.luv_components.l - first.luv_components.l, 2.f) + 
                         pow (second.luv_components.u - first.luv_components.u, 2.f) +
                         pow (second.luv_components.v - first.luv_components.v, 2.f), 0.5f
 
-                    );*/
+                    );
         
     }
 };

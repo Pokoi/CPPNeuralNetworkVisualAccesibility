@@ -17,7 +17,21 @@ void Image::export_image(std::string path)
         {
             Pixel pixel = pixels[j * width + i];
             value = qRgb(pixel.rgb_components.red * 255, pixel.rgb_components.green * 255, pixel.rgb_components.blue * 255);
+            if (pixel.rgb_components.red < 0 || pixel.rgb_components.green < 0 || pixel.rgb_components.blue < 0)
+            {
+                int i = 0;
+            }
+
             img.setPixel(i, j, value);
+        }
+    }
+
+    for (uint16_t i = 0; i < width; ++i)
+    {
+        for (uint16_t j = 0; j < height; ++j)
+        {
+            QColor colour = img.pixel(i, j);
+            pixels[j * width + i].rgb_components = Pixel::RGB(size_t(colour.red()), size_t(colour.green()), size_t(colour.blue()));
         }
     }
 
@@ -28,14 +42,13 @@ void Image::export_image(std::string path)
 @brief Loads an image data from a file path
 #param path The path of the image
 */
-Image::Image(std::string path)
+Image::Image(std::string path) : pixels{500 * 500}
 {
     QPixmap pm(QString(path.c_str()));
     QImage image = (pm.toImage());
     width = image.width();
     height = image.height();
-    pixels = new Pixel[width * height];
-
+    
     for (uint16_t i = 0; i < width; ++i)
     {
         for (uint16_t j = 0; j < height; ++j)
@@ -48,21 +61,17 @@ Image::Image(std::string path)
 }
 
 /**
-@brief Blurs the image. New image is stored in the given image container
-@param output The image where store the new image
+@brief Blurs the image. 
 */
-void Image::blur(Image& output)
-{
-   
-    Pixel* start    = output.get_pixels();
-    Pixel* end;
-    Pixel* original_iterator = pixels;
+void Image::blur()
+{  
+    int iterator = 0;
+    int end = 0;
 
     float red   = 0.f;
     float green = 0.f;
     float blue  = 0.f;
 
-    uint32_t count = 0;
 
     // The critical rows are the first one and last one because they have no previous or next one.
     // They have to be calculated separatly
@@ -71,90 +80,86 @@ void Image::blur(Image& output)
 
     // The firs pixel has no previous pixel. 
     //To prevent to use a conditional, the first pixel is calculated as follows
-    add_components(red, green, blue, original_iterator);
-    add_components(red, green, blue, original_iterator + 1);
-    add_components(red, green, blue, original_iterator + width);
-    add_components(red, green, blue, original_iterator + width + 1);
+    add_components(red, green, blue, pixels[iterator]);
+    add_components(red, green, blue, pixels[iterator + 1]);
+    add_components(red, green, blue, pixels[iterator + width]);
+    add_components(red, green, blue, pixels[iterator + width + 1]);
 
-    start->rgb_components.red   = red   * 0.25f;
-    start->rgb_components.green = green * 0.25f;
-    start->rgb_components.blue  = blue  * 0.25f;
+    pixels[iterator].rgb_components.red   = red   * 0.25f;
+    pixels[iterator].rgb_components.green = green * 0.25f;
+    pixels[iterator].rgb_components.blue  = blue  * 0.25f;
 
-    ++original_iterator;
-    ++start;
-    ++count;
+    ++iterator;   
+   
 
-    end = start + width;
     // The rest of the first row
-    while (start < end)
+    end = width;
+    while (iterator < width)
     {
         red     = 0.f;
         green   = 0.f;
         blue    = 0.f;
 
-        add_components(red, green, blue, original_iterator);
-        add_components(red, green, blue, original_iterator - 1);
-        add_components(red, green, blue, original_iterator + 1);
-        add_components(red, green, blue, original_iterator + width);
-        add_components(red, green, blue, original_iterator + width + 1);
-        add_components(red, green, blue, original_iterator + width - 1);
+        add_components(red, green, blue, pixels[iterator]);
+        add_components(red, green, blue, pixels[iterator - 1 ]);
+        add_components(red, green, blue, pixels[iterator + 1 ]);
+        add_components(red, green, blue, pixels[iterator + width]);
+        add_components(red, green, blue, pixels[iterator + width + 1]);
+        add_components(red, green, blue, pixels[iterator + width - 1]);
 
-        start->rgb_components.red   = red   * 0.16f;
-        start->rgb_components.green = green * 0.16f;
-        start->rgb_components.blue  = blue  * 0.16f;
+        pixels[iterator].rgb_components.red   = red   * 0.16f;
+        pixels[iterator].rgb_components.green = green * 0.16f;
+        pixels[iterator].rgb_components.blue  = blue  * 0.16f;
 
-        ++original_iterator;
-        ++start;
+        ++iterator;        
     }
 
-    end = output.get_pixels() + output.get_width() * output.get_height() - width;
+    end = width * height - width;
 
     // The body of the image
-    while (start < end)
+    while (iterator < end)
     {
         red     = 0.f;
         green   = 0.f;
         blue    = 0.f;
 
-        add_components(red, green, blue, original_iterator);
-        add_components(red, green, blue, original_iterator - 1);
-        add_components(red, green, blue, original_iterator + 1);
-        add_components(red, green, blue, original_iterator + width);
-        add_components(red, green, blue, original_iterator + width + 1);
-        add_components(red, green, blue, original_iterator + width - 1);
-        add_components(red, green, blue, original_iterator - width);
-        add_components(red, green, blue, original_iterator - width + 1);
-        add_components(red, green, blue, original_iterator - width - 1);
+        add_components(red, green, blue, pixels[iterator]);
+        add_components(red, green, blue, pixels[iterator - 1]);
+        add_components(red, green, blue, pixels[iterator + 1]);
+        add_components(red, green, blue, pixels[iterator + width]);
+        add_components(red, green, blue, pixels[iterator + width + 1]);
+        add_components(red, green, blue, pixels[iterator + width - 1]);
+        add_components(red, green, blue, pixels[iterator - width]);
+        add_components(red, green, blue, pixels[iterator - width + 1]);
+        add_components(red, green, blue, pixels[iterator - width - 1]);
 
-        start->rgb_components.red = red     * 0.11f;
-        start->rgb_components.green = green * 0.11f;
-        start->rgb_components.blue = blue   * 0.11f;
+        pixels[iterator].rgb_components.red = red     * 0.11f;
+        pixels[iterator].rgb_components.green = green * 0.11f;
+        pixels[iterator].rgb_components.blue = blue   * 0.11f;
 
-        ++original_iterator;
-        ++start;
+        ++iterator;
     }
 
-    end = output.get_pixels() + output.get_width() * output.get_height();
     // The last row of pixels
-    while (start < end - 1)
+    end += width;
+    while (iterator < end - 1)
     {
         red     = 0.f;
         green   = 0.f;
         blue    = 0.f;
 
-        add_components(red, green, blue, original_iterator);
-        add_components(red, green, blue, original_iterator - 1);
-        add_components(red, green, blue, original_iterator + 1);
-        add_components(red, green, blue, original_iterator - width);
-        add_components(red, green, blue, original_iterator - width - 1);
-        add_components(red, green, blue, original_iterator - width + 1);
+        add_components(red, green, blue, pixels[iterator]);
+        add_components(red, green, blue, pixels[iterator - 1]);
+        add_components(red, green, blue, pixels[iterator + 1]);
+        add_components(red, green, blue, pixels[iterator - width]);
+        add_components(red, green, blue, pixels[iterator - width - 1]);
+        add_components(red, green, blue, pixels[iterator - width + 1]);
 
-        start->rgb_components.red   = red   * 0.16f;
-        start->rgb_components.green = green * 0.16f;
-        start->rgb_components.blue  = blue  * 0.16f;
+        pixels[iterator].rgb_components.red   = red   * 0.16f;
+        pixels[iterator].rgb_components.green = green * 0.16f;
+        pixels[iterator].rgb_components.blue  = blue  * 0.16f;
 
-        ++original_iterator;
-        ++start;
+        ++iterator;
     }
 
     // The last pixel
@@ -162,33 +167,28 @@ void Image::blur(Image& output)
     green   = 0.f;
     blue    = 0.f;
 
-    add_components(red, green, blue, original_iterator);
-    add_components(red, green, blue, original_iterator - 1);
-    add_components(red, green, blue, original_iterator - width);
-    add_components(red, green, blue, original_iterator - width - 1);
+    add_components(red, green, blue, pixels[iterator]);
+    add_components(red, green, blue, pixels[iterator - 1]);
+    add_components(red, green, blue, pixels[iterator - width]);
+    add_components(red, green, blue, pixels[iterator - width - 1]);
 
-    start->rgb_components.red   = red   * 0.25f;
-    start->rgb_components.green = green * 0.25f;
-    start->rgb_components.blue  = blue  * 0.25f;
+    pixels[iterator].rgb_components.red   = red   * 0.25f;
+    pixels[iterator].rgb_components.green = green * 0.25f;
+    pixels[iterator].rgb_components.blue  = blue  * 0.25f;
 
 }
 
 /**
-@brief Apply a sobel colour effect to the image and store the result in the given image
-@param output The image where store the new image
+@brief Apply a sobel colour effect to the image
 */
-
-void Image::sobel_colour(Image & output)
+void Image::sobel_colour()
 {
-   // output = Image(width, height);
-
-    Pixel* start = pixels;
-    Pixel* end = start + width * height;
-      
+    int end = 0;      
+    int iterator = 0;
 
     // set the start in the second row and the end in the previous of the last row
     // This avoid extra conditional operations and the lost of information is not relevant
-    start += width + 1;
+    iterator += width + 1;
     end -= (width+1);
 
     float* buffer = new float[width * height];
@@ -198,17 +198,17 @@ void Image::sobel_colour(Image & output)
     float max = 0.f;  
     
     
-    while (start < end)
+    while (iterator < end)
     {
         float gx =
-            1.f * colour_difference(*(start - width - 1), *(start - width + 1)) +
-            2.f * colour_difference(*(start - 1), *(start + 1)) +
-            1.f * colour_difference(*(start - 1 + width), *(start + width + 1));
+            1.f * colour_difference(pixels[iterator - width - 1], pixels[iterator - width + 1]) +
+            2.f * colour_difference(pixels[iterator - 1], pixels[iterator + 1]) +
+            1.f * colour_difference(pixels[iterator - 1 + width], pixels[iterator + width + 1]);
 
         float gy =
-            1.f * colour_difference(*(start - width - 1), *(start + width - 1)) +
-            2.f * colour_difference(*(start - width), *(start + width)) +
-            1.f * colour_difference(*(start + 1 - width), *(start + width + 1));
+            1.f * colour_difference(pixels[iterator - width - 1], pixels[iterator + width - 1]) +
+            2.f * colour_difference(pixels[iterator - width], pixels[iterator + width]) +
+            1.f * colour_difference(pixels[iterator + 1 - width], pixels[iterator + width + 1]);
 
         float val = pow(gx * gx + gy * gy, 0.5);
         *writer = val;         
@@ -217,27 +217,25 @@ void Image::sobel_colour(Image & output)
         min = val < min ? val : min;
 
         ++writer;
-        ++start;
+        ++iterator;
     }
-
-    Pixel* iterator = output.get_pixels();
-    
-    int count = 0;
+        
     float* last_value = buffer + (width * height);
     writer = buffer;
+    iterator = 0;
 
     while (writer < last_value)
     {
         //if(max - min != 0.f)
         //*writer = ((*writer) - min) / max - min;
 
-        iterator->rgb_components.red    = (*writer);
-        iterator->rgb_components.green  = (*writer);
-        iterator->rgb_components.blue   = (*writer);
+        pixels[iterator].rgb_components.red    = (*writer);
+        pixels[iterator].rgb_components.green  = (*writer);
+        pixels[iterator].rgb_components.blue   = (*writer);
        
         ++writer;
         ++iterator;
-        ++count;
+        
     }
     
     // Free the memory

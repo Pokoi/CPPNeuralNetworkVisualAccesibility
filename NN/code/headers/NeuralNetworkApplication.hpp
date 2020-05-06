@@ -9,11 +9,7 @@
 class NeuralNetworkApplication : public QGuiApplication
 {
 private:
-
-    float* neural_network_input = nullptr;
-    float* neural_network_output = nullptr;
-    float* neural_network_desired_output= nullptr;
-
+       
     enum impairment_types {DEUTERANOPIA, PROTANOPIA, TRITANOPIA};
     impairment_types type;
 
@@ -49,6 +45,10 @@ public:
     */
     void training(uint16_t image_width, uint16_t image_height);
 
+
+    //void 
+
+
     /**
     @brief Transform a given image 
     @param filename The name of the image to transform
@@ -58,17 +58,13 @@ public:
     /**
     @brief Extract the input for the neural network from a image data
     @param img The image with the data
+    @param input The collection where store the input values 
     */
-    void extract_input_from_image(Image & img)
+    void extract_input_from_image(Image & img, std::vector<float> & input)
     {
-        uint32_t size = img.get_height() * img.get_width();
+        uint32_t size = img.get_height() * img.get_width();       
         
-        Pixel* pixels = img.get_pixels();
-        Pixel* last_pixel = pixels + size;
-
-        float* start = neural_network_input;
-
-        copy_pixel_components_to_float(pixels, last_pixel, start);
+        copy_pixel_components_to_float(img.get_pixels(), size, input);
     }
 
     /**
@@ -76,26 +72,32 @@ public:
     @param original The image to sobel
     @param values The collection where store the values. Each pixel generates 3 values (one for each channel)
     */
-    void get_sobel_values(Image& original, float* values);
+    void get_sobel_values(Image& original, std::vector<float>& values);
 
     /**
     @brief Extract the color components values of a collecion of pixels 
     @param pixels The first pixel in the collection 
-    @param last_pixel The last pixel in the collection
+    @param last_pixel The last pixel index in the collection
     @param start The collection where the values will be stored
     */
-    void copy_pixel_components_to_float(Pixel* pixels, Pixel* last_pixel, float* start)
-    {
-        int count = 0;
-        while (pixels < last_pixel)
-        {
-            *start       = pixels->rgb_components.red;
-            *(start + 1) = pixels->rgb_components.green;
-            *(start + 2) = pixels->rgb_components.blue;             
+    void copy_pixel_components_to_float(std::vector<Pixel> & pixels, int last_pixel, std::vector<float>& start)
+    {       
+        int iterator = 0;
+        int pixel_iterator = 0;
 
-            ++pixels;
-            start += 3;
-            count++;
+        while (pixel_iterator < last_pixel)
+        {
+            start [iterator]     = pixels[pixel_iterator].rgb_components.red;
+            start [iterator + 1] = pixels[pixel_iterator].rgb_components.green;
+            start [iterator + 2] = pixels[pixel_iterator].rgb_components.blue;
+
+            if (start[iterator] < 0 || start[iterator + 1] < 0 || start[iterator + 2] < 0)
+            {
+                int i = 0;
+            }
+
+            ++pixel_iterator;
+            iterator += 3;
         }
     }
 
@@ -104,7 +106,7 @@ public:
     @param original The original image
     @param output The output of the neural network. The values will be overriden with the new ones 
     */
-    void parse_output(Image& original, float* output, Image& output_image);
+    void parse_output(Image& original, std::vector<float> & output, Image& output_image);
 
     /**
     @brief Limit the value to the given limits
@@ -121,9 +123,9 @@ public:
     /**
     @brief Calculates the values of lms daltonization process
     @param original The original image
-    @param output_values The collection where store the values
+    @param output The collection where store the values
     */
-    void lms_daltonization(Image& original, float* output_values);
+    void lms_daltonization(Image& original, std::vector<float> & output);
    
 
 
