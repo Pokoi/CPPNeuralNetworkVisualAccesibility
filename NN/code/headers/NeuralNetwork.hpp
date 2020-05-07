@@ -91,11 +91,42 @@ public:
     @param path The path of the file where the data will be exported
     */
     void export_network(std::string path);
-       
+    
+    /**
+    @brief Get the layers of the network
+    @return The layers
+    */
     Layer** get_layers()
     {
         return layers;
     }
+
+    /**
+    @brief Apply the info of a given binary data
+    @param data The data to apply
+    */
+    void apply_binary_data(BinaryData data);
+
+    /**
+    @brief Gets a copy of the binary data of the network
+    @param A copy of the binary data
+    */
+    BinaryData get_binary_data()
+    {
+        BinaryData data;
+
+        data.wa = layers[1]->get_neurons()[0]->get_weights()[0];
+        data.wb = layers[1]->get_neurons()[0]->get_weights()[1];
+        data.wc = layers[1]->get_neurons()[0]->get_weights()[2];
+        data.wd = layers[2]->get_neurons()[0]->get_weights()[0];
+        data.we = layers[2]->get_neurons()[1]->get_weights()[0];
+        data.wf = layers[2]->get_neurons()[2]->get_weights()[0];        
+
+        data.first_layer_neurons = layers[0]->get_neurons_size();
+
+        return data;
+    }
+
 
     /**
     @brief Releases the dynamic memory

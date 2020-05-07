@@ -60,9 +60,7 @@ NeuralNetwork::NeuralNetwork(std::string path)
 */
 void NeuralNetwork::export_network(std::string path)
 {
-    BinaryData* data = new BinaryData();
-
-    if (!data) data = new BinaryData();
+    BinaryData* data = new BinaryData();    
 
     data->wa = layers[1]->get_neurons()[0]->get_weights()[0];
     data->wb = layers[1]->get_neurons()[0]->get_weights()[1];
@@ -81,6 +79,39 @@ void NeuralNetwork::export_network(std::string path)
     stream.close();      
 
     delete data;
+}
+
+/**
+@brief Apply the info of a given binary data
+@param data The data to apply
+*/
+void NeuralNetwork::apply_binary_data(BinaryData data)
+{
+    // Set the wa, wb, wc 
+    Neuron** start = layers[1]->get_neurons();
+    Neuron** end = start + (data.first_layer_neurons / 3);
+
+    while (start < end)
+    {
+        (*start)->set_weight(data.wa, 0);
+        (*start)->set_weight(data.wb, 1);
+        (*start)->set_weight(data.wc, 2);
+
+        ++start;
+    }
+
+    // Set the wd, we, wf
+    start = layers[2]->get_neurons();
+    end = start + (data.first_layer_neurons);
+
+    while (start < end)
+    {
+        (*start)->set_weight(data.wd, 0);
+        (*(start + 1))->set_weight(data.we, 0);
+        (*(start + 2))->set_weight(data.wf, 0);
+
+        start += 3;
+    }
 }
 
 /**
@@ -171,11 +202,6 @@ void NeuralNetwork::feed_forward(std::vector<float>& inputs, std::vector<float>&
         outputs[iterator] = value;
         ++start;
         ++iterator;
-        
-        if (isnan(value))
-        {
-            int i = 0;
-        }
 
         value = (*previous_layer_start)->get_value() * (*start)->get_weights()[0];
         value = activate(value, layers[2]->get_activation());
@@ -184,24 +210,14 @@ void NeuralNetwork::feed_forward(std::vector<float>& inputs, std::vector<float>&
         outputs[iterator] = value;
         ++start;
         ++iterator;
-                
-        if (isnan(value))
-        {
-            int i = 0;
-        }
 
         value = (*previous_layer_start)->get_value() * (*start)->get_weights()[0];
-        //value = activate(value, layers[2]->get_activation());
-        
+        value = activate(value, layers[2]->get_activation());
+
         (*start)->set_value(value);
         outputs[iterator] = value;
         ++start;
         ++iterator;
-        
-        if (isnan(value))
-        {
-            int i = 0;
-        }
 
         ++previous_layer_start;
     }

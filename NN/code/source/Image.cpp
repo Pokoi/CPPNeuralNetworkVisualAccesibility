@@ -9,23 +9,24 @@
 void Image::export_image(std::string path)
 {
     QImage img = QImage(int(width), int(height), QImage::Format::Format_RGB32);
-    QRgb value;
+    QColor value;
 
     for (uint16_t i = 0; i < width; ++i)
     {
         for (uint16_t j = 0; j < height; ++j)
         {
             Pixel pixel = pixels[j * width + i];
-            value = qRgb(pixel.rgb_components.red * 255, pixel.rgb_components.green * 255, pixel.rgb_components.blue * 255);
+            value = QColor(pixel.rgb_components.red * 255, pixel.rgb_components.green * 255, pixel.rgb_components.blue * 255);
             if (pixel.rgb_components.red < 0 || pixel.rgb_components.green < 0 || pixel.rgb_components.blue < 0)
             {
                 int i = 0;
             }
 
-            img.setPixel(i, j, value);
+            img.setPixelColor(i, j, value);
         }
     }
 
+    /*
     for (uint16_t i = 0; i < width; ++i)
     {
         for (uint16_t j = 0; j < height; ++j)
@@ -34,7 +35,7 @@ void Image::export_image(std::string path)
             pixels[j * width + i].rgb_components = Pixel::RGB(size_t(colour.red()), size_t(colour.green()), size_t(colour.blue()));
         }
     }
-
+    */
     img.save(QString::fromStdString(path));
 }
 

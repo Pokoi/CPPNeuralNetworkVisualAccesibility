@@ -218,27 +218,31 @@ public:
         float Gi = 0.113614708f * Lp + -0.0102485335f * Mp + 0.0540193266f * Sp;
         float Bi = -0.000365296938f * Lp + -0.00412161469f * Mp + 0.693511405 * Sp;
 
+        Ri = clamp(Ri, 0, 1);
+        Gi = clamp(Gi, 0, 1);
+        Bi = clamp(Bi, 0, 1);
+
         float Dr = rgb_components.red - Ri;
         float Dg = rgb_components.green - Gi;
         float Db = rgb_components.blue - Bi;
 
         float Rm = 0.f * Dr + 0.f * Dg + 0.f * Db;
         float Gm = 0.7f * Dr + 1.f * Dg + 0.f * Db;
-        float Bm = 0.7f * Dr + 0.f * Dg + 1.f * Db;
+        float Bm = 0.7f * Dr + 0.7f * Dg + 1.f * Db;
 
-        rgb_components.red   += Rm;
-        rgb_components.green += Gm;
-        rgb_components.blue  += Bm;
+        rgb_components.red = clamp(r + Rm, 0, 1);
+        rgb_components.green = clamp(g + Gm, 0, 1);
+        rgb_components.blue = clamp(b + Bm, 0, 1);
     }
 
     void lms_deuteranopia()
     {
-        float r = rgb_components.red;
+        float r = rgb_components.red ;
         float g = rgb_components.green;
         float b = rgb_components.blue;
 
-        float L = 17.8824f * r + 43.5161f * g + 4.11935f * b;
-        float M = 3.45565f * r + 27.1554f * g + 3.86714f * b;
+        float L = 17.8824f   * r + 43.5161f * g + 4.11935f * b;
+        float M = 3.45565f   * r + 27.1554f * g + 3.86714f * b;
         float S = 0.0299566f * r + 0.184309f * g + 1.46709f * b;
 
         float Ld = 1.f * L + 0.f * M + 0.f * S;
@@ -249,22 +253,21 @@ public:
         float Gi = 0.113614708f * Ld + -0.0102485335f * Md + 0.0540193266f * Sd;
         float Bi = -0.000365296938f * Ld + -0.00412161469f * Md + 0.693511405 * Sd;
 
+        Ri = clamp(Ri, 0, 1);
+        Gi = clamp(Gi, 0, 1);
+        Bi = clamp(Bi, 0, 1);
+
         float Dr = rgb_components.red - Ri;
         float Dg = rgb_components.green - Gi;
         float Db = rgb_components.blue - Bi;
 
-        float Rm = 1.f * Dr + 0.7f * Dg + 0.f * Db;
-        float Gm = 0.0f * Dr + 0.f * Dg + 0.f * Db;
-        float Bm = 0.f * Dr + 0.7f * Dg + 1.f * Db;
-
+        float Rm = 0.f * Dr + 0.f * Dg + 0.f * Db;
+        float Gm = 0.7f * Dr + 1.f * Dg + 0.f * Db;
+        float Bm = 0.7f * Dr + 0.7f * Dg + 1.f * Db;
         
-        rgb_components.red   = clamp (r + Rm, 0, 1);
-        rgb_components.green = clamp (g + Gm, 0, 1);
-        rgb_components.blue  = clamp (b + Bm, 0, 1);
-
-        rgb_components.red   += Rm;
-        rgb_components.green += Gm;
-        rgb_components.blue  += Bm;
+        rgb_components.red   = clamp (r + Rm, 0, 1) ;
+        rgb_components.green = clamp (g + Gm, 0, 1) ;
+        rgb_components.blue  = clamp (b + Bm, 0, 1) ;        
        
     }
 
@@ -272,7 +275,7 @@ public:
     {
         float r = rgb_components.red;
         float g = rgb_components.green;
-        float b = rgb_components.blue; 
+        float b = rgb_components.blue;
 
         float L = 17.8824f * r + 43.5161f * g + 4.11935f * b;
         float M = 3.45565f * r + 27.1554f * g + 3.86714f * b;
@@ -286,17 +289,38 @@ public:
         float Gi = 0.113614708f * Lt + -0.0102485335f * Mt + 0.0540193266f * St;
         float Bi = -0.000365296938f * Lt + -0.00412161469f * Mt + 0.693511405 * St;
 
+        Ri = clamp(Ri, 0, 1);
+        Gi = clamp(Gi, 0, 1);
+        Bi = clamp(Bi, 0, 1);
+
         float Dr = rgb_components.red - Ri;
         float Dg = rgb_components.green - Gi;
         float Db = rgb_components.blue - Bi;
 
-        float Rm = 1.f * Dr + 0.f * Dg + 0.7f * Db;
-        float Gm = 0.0f * Dr + 1.f * Dg + 0.7f * Db;
-        float Bm = 0.f * Dr + 0.f * Dg + 0.f * Db;
+        float Rm = 0.f * Dr + 0.f * Dg + 0.f * Db;
+        float Gm = 0.7f * Dr + 1.f * Dg + 0.f * Db;
+        float Bm = 0.7f * Dr + 0.7f * Dg + 1.f * Db;
 
-        rgb_components.red   += Rm;
-        rgb_components.green += Gm;
-        rgb_components.blue  += Bm;
+        rgb_components.red = clamp(r + Rm, 0, 1);
+        rgb_components.green = clamp(g + Gm, 0, 1);
+        rgb_components.blue = clamp(b + Bm, 0, 1);
+    }
+
+    void rgb_daltonization()
+    {
+        float r = rgb_components.red;
+        float g = rgb_components.green;
+        float b = rgb_components.blue;
+
+        float factor = 0.28f;
+
+        float Rm = ((1 - (r)) * factor) + r;
+        float Gm = ((1 - (g)) * factor) + g;
+        float Bm = Rm > Gm ? b - b * factor : ((1 - (b)) * factor) + b;
+
+        rgb_components.red = clamp(Rm, 0, 1);
+        rgb_components.green = clamp(Gm, 0, 1);
+        rgb_components.blue = clamp(Bm, 0, 1);
     }
     
     /**

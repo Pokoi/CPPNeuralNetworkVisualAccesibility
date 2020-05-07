@@ -1,6 +1,7 @@
 
 #include <NeuralNetwork.hpp>
 #include "..\headers\NeuralNetworkApplication.hpp"
+#include <limits>
 
 /**
 @brief Train the neural network with images of the given size
@@ -74,8 +75,129 @@ void NeuralNetworkApplication::training(uint16_t image_width, uint16_t image_hei
     }
 
     // Save the neural network values in file
-
     net.export_network("/../../assets/data/data.dat");    
+}
+
+/**
+@brief Train the network with genetic algorithm
+*/
+void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t image_height, std::string data_path)
+{
+    const uint8_t network_count = 20;
+    const uint8_t genetic_generations = 120;
+    const uint16_t dataset_count = 1; //1049 max
+    const uint16_t training_iterations = 1;
+    
+    std::string path = "../../assets/training_dataset/";
+
+    const uint32_t size = image_width * image_height * 3;
+
+    std::vector <float > neural_network_input(size);    
+    std::vector <float > neural_network_desired_output(size);
+    
+    uint8_t best_parent_index = 0;
+    uint8_t second_best_parent_index = 0;
+
+    // Create random networks
+    std::vector<std::shared_ptr<NeuralNetwork>> networks(network_count);
+    initialize_networks(networks, network_count - 1);
+
+    networks[network_count - 1] = std::make_shared<NeuralNetwork>(data_path);
+
+    // Do the training for each image and each training iteration
+    for (uint16_t i = 0; i < training_iterations; ++i)
+    {
+        for (uint16_t j = 0; j < dataset_count; ++j)
+        {
+            // Extract input
+            Image img(path + std::to_string(1050) + ".png");
+            Image output_img(img.get_width(), img.get_height());
+
+            extract_input_from_image(img, neural_network_input);
+            
+            img.export_image("../../assets/data/original.png");
+
+            // Extract desired outputs
+            //lms_daltonization(img, neural_network_desired_output);
+            rgb_daltonization(img, neural_network_desired_output);
+            
+
+
+            // For each genetic iteration
+            for (uint8_t genetic_iteration = 0; genetic_iteration < genetic_generations; ++genetic_iteration)
+            {
+                int neural_network_index = 0;
+                
+                best_parent_index = 0;
+                second_best_parent_index = 0;
+
+                float best_delta = std::numeric_limits<float>::max();
+                float second_best_delta = std::numeric_limits<float>::max();
+
+                // For each neural network generated
+                for (auto& net : networks)
+                {
+                    std::vector <float > neural_network_output(size);                    
+
+                    net->feed_forward(neural_network_input, neural_network_output);
+
+                    // Create the generated image. This is for debug proporse only                 
+                    int iterator = 0;
+
+                    for (auto& pixel : output_img.get_pixels())
+                    {
+                        pixel.rgb_components.red = limit(neural_network_output[iterator], 0.f, 1.f);
+                        pixel.rgb_components.green = limit(neural_network_output[iterator + 1], 0.f, 1.f);
+                        pixel.rgb_components.blue = limit(neural_network_output[iterator + 2], 0.f, 1.f);
+
+                        iterator += 3;
+                    }
+                    output_img.export_image("../../assets/data/post_element_" + std::to_string(neural_network_index) + ".png");
+            
+                    // Calculate delta                   
+                    iterator = 0;
+                    float delta = 0;
+
+                    while (iterator < size)
+                    {
+                        Pixel first;
+                        Pixel second;
+
+                        first.rgb_components = Pixel::RGB(neural_network_output[iterator], neural_network_output[iterator + 1], neural_network_output[iterator + 2]);
+                        second.rgb_components = Pixel::RGB(neural_network_desired_output[iterator], neural_network_desired_output[iterator + 1], neural_network_desired_output[iterator + 2]);
+
+                        delta += calculate_delta(first, second);                                        
+                        iterator += 3;
+                    }
+
+                    if (delta < best_delta)
+                    {
+                        best_parent_index = neural_network_index;
+                        best_delta = delta;
+                    }
+                    else if (delta < second_best_delta)
+                    {
+                        second_best_parent_index = neural_network_index;
+                        second_best_delta = delta;
+                    }
+
+                    neural_network_index++;
+                }             
+
+                // Recombine
+                recombine_networks(networks, best_parent_index, second_best_parent_index);
+
+            system("cls");
+            std::cout << std::endl << std::to_string(genetic_iteration) <<  " genetic iteration of " << std::to_string(genetic_generations) << " in the " << std::to_string(i * dataset_count + j) << " training iteration of " << std::to_string(dataset_count * training_iterations) << std::endl;
+            std::cout << std::endl << "Best delta: " << std::to_string(best_delta);
+            }
+        }
+    }
+
+    // Export the data of the  best generated network
+    networks[best_parent_index]->export_network("/../../assets/data/data.dat");
+
+
 }
 
 /**
