@@ -7,12 +7,18 @@
 #include <iostream>
 #include <memory>
 
+#include <chrono>
+#include <ctime>
+
 class NeuralNetworkApplication : public QGuiApplication
 {
 private:
        
     enum impairment_types {DEUTERANOPIA, PROTANOPIA, TRITANOPIA};
     impairment_types type;
+
+    enum evaluation_type {LMS, RGB};
+    evaluation_type evaluation;
 
     bool exporting = false;
     std::string export_path;
@@ -24,22 +30,58 @@ public:
     */
     NeuralNetworkApplication(int& argc, char** argv) : QGuiApplication(argc, argv)
     {
-        type = impairment_types::DEUTERANOPIA;       
-       
+        auto start = std::chrono::system_clock::now();       
+
         // Generate a random values        
         //NeuralNetwork net(500 * 500 * 3);
         //net.export_network("../../assets/data/data.dat");        
 
+        /*
         // Train
-        //training(500, 500);
-
-        // Generate a test
-        //transform("test.png");
-
+        //training(500, 500);               
+        */
         // Genetic training
-        genetic_training(500, 500, "../../assets/data/data.dat");
+        //evaluation = evaluation_type::LMS;
         
-        std::cout << std::endl << "Done! :)";
+        //type = impairment_types::DEUTERANOPIA;
+        //genetic_training(500, 500, "../../assets/data/data_DEUTERANOPIA_LMS.dat");
+
+        /*
+        type = impairment_types::PROTANOPIA;        
+        genetic_training(500, 500, "../../assets/data/data_PROTANOPIA_LMS.dat");
+
+        type = impairment_types::TRITANOPIA;
+        genetic_training(500, 500, "../../assets/data/data_TRITANOPIA_LMS.dat");
+        
+        evaluation = evaluation_type::RGB;
+        type = impairment_types::DEUTERANOPIA;
+        genetic_training(500, 500, "../../assets/data/data_DEUTERANOPIA_RGB.dat");
+        
+        type = impairment_types::PROTANOPIA;
+        genetic_training(500, 500, "../../assets/data/data_PROTANOPIA_RGB.dat");
+
+        type = impairment_types::TRITANOPIA;
+        genetic_training(500, 500, "../../assets/data/data_TRITANOPIA_RGB.dat");
+        */
+        //std::cout << std::endl << "Done! :)";
+        auto end = std::chrono::system_clock::now();
+
+        std::chrono::duration<double> elapsed_minutes = (end - start)/60;
+        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+
+        std::cout << std::endl << "Finished at " << std::ctime(&end_time) << std::endl
+                    << "Elapsed time: " << elapsed_minutes.count() << "minutes";
+
+        /*
+        
+
+        */
+        // Generate a test
+       //transform("0.png", "../../assets/data/data_DEUTERANOPIA_LMS.dat");
+       transform("deut_test.png", "../../assets/data/data_DEUTERANOPIA_LMS.dat");
+    
+        
+
     }
 
     /**
@@ -59,7 +101,7 @@ public:
     @brief Transform a given image 
     @param filename The name of the image to transform
     */
-    void transform(std::string filename);
+    void transform(std::string filename, std::string data_path);
 
     /**
     @brief Extract the input for the neural network from a image data
@@ -70,7 +112,8 @@ public:
     {
         uint32_t size = img.get_height() * img.get_width();       
         
-        copy_pixel_components_to_float(img.get_pixels(), size, input);
+        //copy_pixel_components_to_float(img.get_pixels(), size, input);
+        copy_pixel_luv_components_to_float(img.get_pixels(), size, input);
     }
 
     /**
@@ -89,22 +132,40 @@ public:
     void copy_pixel_components_to_float(std::vector<Pixel> & pixels, int last_pixel, std::vector<float>& start)
     {       
         int iterator = 0;
-        int pixel_iterator = 0;
+        int pixel_iterator = 0;        
 
         while (pixel_iterator < last_pixel)
         {
             start [iterator]     = pixels[pixel_iterator].rgb_components.red;
             start [iterator + 1] = pixels[pixel_iterator].rgb_components.green;
             start [iterator + 2] = pixels[pixel_iterator].rgb_components.blue;
-
-            if (start[iterator] < 0 || start[iterator + 1] < 0 || start[iterator + 2] < 0)
-            {
-                int i = 0;
-            }
+                        
 
             ++pixel_iterator;
             iterator += 3;
         }
+    }
+
+    /**
+    @brief Extract the color components values of a collecion of pixels
+    @param pixels The first pixel in the collection
+    @param last_pixel The last pixel index in the collection
+    @param start The collection where the values will be stored
+    */
+    void copy_pixel_luv_components_to_float(std::vector<Pixel>& pixels, int last_pixel, std::vector<float>& start)
+    {
+        int iterator = 0;        
+
+        for (auto& pixel : pixels)
+        {
+            pixel.convert_rgb_to_luv();
+
+            start[iterator]     = pixel.luv_components.l;
+            start[iterator + 1] = pixel.luv_components.u;
+            start[iterator + 2] = pixel.luv_components.v;
+
+            iterator += 3;
+        }        
     }
 
     /**
@@ -144,7 +205,7 @@ public:
         {
             pixel.rgb_daltonization();
         }
-        original.export_image("../../assets/data/rgb_daltonization.png");
+        //original.export_image("../../assets/data/rgb_daltonization.png");
 
         copy_pixel_components_to_float(original.get_pixels(), original.get_width() * original.get_height(), output_values);
     }
@@ -219,9 +280,7 @@ public:
         @return The delta 
         */
         float calculate_delta(Pixel & first, Pixel & second)
-        {
-            first.convert_rgb_to_luv();
-            second.convert_rgb_to_luv();
+        {           
 
             return pow(
                 pow(second.luv_components.l - first.luv_components.l, 2.f) +

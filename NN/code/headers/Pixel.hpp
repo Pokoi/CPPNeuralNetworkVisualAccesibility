@@ -192,12 +192,38 @@ public:
         k = 24389.0f / 27.f;
 
         luv_components.l = yr > e ? 
-                                    luv_components.l = 116.f * pow(yr, 0.33) - 16 
+                                    116.f * pow(yr, 0.33) - 16 
                                   : k * yr;             
 
         luv_components.u = 13.0f * luv_components.l * (us - usr);
         luv_components.v = 13.0f * luv_components.l * (vs - vsr);      
 
+    }
+
+    /**
+    @brief Generates the rgb components in base of luv values
+    */
+    void convert_luv_to_rgb()
+    {
+        float Xr = 0.33f;
+        float Yr = 0.33f;
+        float Zr = 0.33f;
+        float usr = 4 * Xr / (Xr + 15 * Yr + 2 * Zr);
+        float vsr = 9 * Yr / (Xr + 15 * Yr + 3 * Zr);
+
+        float u_ = luv_components.u / (13 * luv_components.l) + usr;
+        float v_ = luv_components.v / (13 * luv_components.l) + vsr;
+        float Y = pow (((luv_components.l + 16) / 116), 3);
+        float X = (-9 * Y * u_ ) / (u_ - 4) * v_ - u_* v_ ;
+        float Z = (9 * Y - 15 * v_ * Y - v_ * X) / 3 * v_;
+
+        float r = (3.063218f) * X + (-1.393325f) * Y + (-0.475802f) * Z;
+        float g = (-0.969243f) * X + (1.875966f) * Y + (0.041555f) * Z;
+        float b = (0.067871f) * X + (-0.228834f) * Y + (1.069251f) * Z;
+
+        rgb_components.red = r < 0.f ? 0.f : r > 1.f ? 1.f : r;
+        rgb_components.green = g < 0.f ? 0.f : g > 1.f ? 1.f : g;
+        rgb_components.blue = b < 0.f ? 0.f : b > 1.f ? 1.f : b;
     }
 
     void lms_protanopia()

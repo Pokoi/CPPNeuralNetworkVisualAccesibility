@@ -84,7 +84,7 @@ void NeuralNetworkApplication::training(uint16_t image_width, uint16_t image_hei
 void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t image_height, std::string data_path)
 {
     const uint8_t network_count = 20;
-    const uint8_t genetic_generations = 120;
+    const uint8_t genetic_generations = 100;
     const uint16_t dataset_count = 1; //1049 max
     const uint16_t training_iterations = 1;
     
@@ -110,18 +110,22 @@ void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t i
         for (uint16_t j = 0; j < dataset_count; ++j)
         {
             // Extract input
-            Image img(path + std::to_string(1050) + ".png");
+            Image img(path + std::to_string(j) + ".png");
             Image output_img(img.get_width(), img.get_height());
 
             extract_input_from_image(img, neural_network_input);
             
-            img.export_image("../../assets/data/original.png");
+            //img.export_image("../../assets/data/original.png");
 
             // Extract desired outputs
-            //lms_daltonization(img, neural_network_desired_output);
-            rgb_daltonization(img, neural_network_desired_output);
-            
-
+            if (evaluation == evaluation_type::LMS)
+            {
+                lms_daltonization(img, neural_network_desired_output);
+            }
+            else if (evaluation == evaluation_type::RGB)
+            {
+                rgb_daltonization(img, neural_network_desired_output);           
+            }
 
             // For each genetic iteration
             for (uint8_t genetic_iteration = 0; genetic_iteration < genetic_generations; ++genetic_iteration)
@@ -146,13 +150,13 @@ void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t i
 
                     for (auto& pixel : output_img.get_pixels())
                     {
-                        pixel.rgb_components.red = limit(neural_network_output[iterator], 0.f, 1.f);
-                        pixel.rgb_components.green = limit(neural_network_output[iterator + 1], 0.f, 1.f);
-                        pixel.rgb_components.blue = limit(neural_network_output[iterator + 2], 0.f, 1.f);
+                        pixel.luv_components.l  = limit(neural_network_output[iterator], 0.f, 1.f);
+                        pixel.luv_components.u  = limit(neural_network_output[iterator + 1], 0.f, 1.f);
+                        pixel.luv_components.v  = limit(neural_network_output[iterator + 2], 0.f, 1.f);
 
                         iterator += 3;
                     }
-                    output_img.export_image("../../assets/data/post_element_" + std::to_string(neural_network_index) + ".png");
+                    //output_img.export_image("../../assets/data/post_element_" + std::to_string(neural_network_index) + ".png");
             
                     // Calculate delta                   
                     iterator = 0;
@@ -163,8 +167,8 @@ void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t i
                         Pixel first;
                         Pixel second;
 
-                        first.rgb_components = Pixel::RGB(neural_network_output[iterator], neural_network_output[iterator + 1], neural_network_output[iterator + 2]);
-                        second.rgb_components = Pixel::RGB(neural_network_desired_output[iterator], neural_network_desired_output[iterator + 1], neural_network_desired_output[iterator + 2]);
+                        first.luv_components  = Pixel::LUV(neural_network_output[iterator], neural_network_output[iterator + 1], neural_network_output[iterator + 2]);
+                        second.luv_components = Pixel::LUV(neural_network_desired_output[iterator], neural_network_desired_output[iterator + 1], neural_network_desired_output[iterator + 2]);
 
                         delta += calculate_delta(first, second);                                        
                         iterator += 3;
@@ -188,15 +192,18 @@ void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t i
                 recombine_networks(networks, best_parent_index, second_best_parent_index);
 
             system("cls");
-            std::cout << std::endl << std::to_string(genetic_iteration) <<  " genetic iteration of " << std::to_string(genetic_generations) << " in the " << std::to_string(i * dataset_count + j) << " training iteration of " << std::to_string(dataset_count * training_iterations) << std::endl;
-            std::cout << std::endl << "Best delta: " << std::to_string(best_delta);
+            std::cout << std::endl << " Evaluation: " + data_path << std::endl
+                                   << " Genetic iteration : " << std::to_string(genetic_iteration) << " / " << std::to_string(genetic_generations) << std::endl
+                                   << " Training iteration: " << std::to_string(i * dataset_count + j) << " / " << std::to_string(dataset_count * training_iterations) << std::endl;                                 
             }
+
+            // Export the data of the  best generated network
+            networks[best_parent_index]->export_network(data_path);
         }
-    }
-
+    } 
+    
     // Export the data of the  best generated network
-    networks[best_parent_index]->export_network("/../../assets/data/data.dat");
-
+    networks[best_parent_index]->export_network(data_path);
 
 }
 
@@ -204,9 +211,10 @@ void NeuralNetworkApplication::genetic_training(uint16_t image_width, uint16_t i
 @brief Transform a given image
 @param filename The name of the image to transform
 */
-void NeuralNetworkApplication::transform(std::string filename)
+void NeuralNetworkApplication::transform(std::string filename, std::string data_path)
 {
-    /*std::string path = "../../assets/sample/" + filename;
+    std::string path = "../../assets/sample/" + filename;
+    //std::string path = "../../assets/training_dataset/" + filename;
     exporting = true;
 
     // Load the image
@@ -215,7 +223,7 @@ void NeuralNetworkApplication::transform(std::string filename)
     // Load the neural network values
     std::ifstream stream;
 
-    stream.open("../../assets/data/data.dat");
+    stream.open(data_path);
     std::string content;
     std::getline(stream, content);
     stream.close();
@@ -227,33 +235,18 @@ void NeuralNetworkApplication::transform(std::string filename)
     export_path = "../../assets/generated/original.png";
     img.export_image(export_path);
 
-    // Export original sobeled
-    export_path = "../../assets/generated/original_sobeled.png";
-    std::vector<float> values (img.get_width() * img.get_height() * 3);
-    get_sobel_values(img, values);
-
-    // Export original simulated
-    Pixel* start = img.get_pixels();
-    Pixel* end = start + (img.get_width() * img.get_height());
-
-    while (start < end)
+    // Export original simulated  
+    for (auto& pixel : img.get_pixels())
     {
-        start->simulate_deuteranopia();
-        ++start;
+        pixel.lms_deuteranopia();
     }
-
     export_path = "../../assets/generated/original_deuteranopia_simulation.png";
     img.export_image(export_path);
 
-    // Export original simulated sobeled
-    export_path = "../../assets/generated/original_deuteranopia_sobeled.png";    
-    get_sobel_values(img, values);
 
     // Calculate transformed
-    img = Image(path);
-    start = img.get_pixels();
-    end = start + (img.get_width() * img.get_height());
-
+    img = Image(path);    
+    
     float w1 = data.wa * data.wd;
     float w2 = data.wb * data.wd;
     float w3 = data.wc * data.wd;
@@ -263,42 +256,62 @@ void NeuralNetworkApplication::transform(std::string filename)
     float w7 = data.wa * data.wf;
     float w8 = data.wb * data.wf;
     float w9 = data.wc * data.wf;
-
-
-    while (start < end)
+    
+    for (auto& pixel : img.get_pixels())
     {
-        start->rgb_components.red = start->rgb_components.red * w1 +
-            start->rgb_components.green * w2 +
-            start->rgb_components.blue * w3;
+        pixel.convert_rgb_to_luv();
 
-        start->rgb_components.green = start->rgb_components.red * w4 +
-            start->rgb_components.green * w5 +
-            start->rgb_components.blue * w6;
+        float r = pixel.rgb_components.red;
+        float g = pixel.rgb_components.green;
+        float b = pixel.rgb_components.blue;
 
-        start->rgb_components.blue = start->rgb_components.red * w7 +
-            start->rgb_components.green * w8 +
-            start->rgb_components.blue * w9;
-        ++start;
+        float l = pixel.luv_components.l;
+        float u = pixel.luv_components.u;
+        float v = pixel.luv_components.v;
+
+        float Li = l * w1 + u * w2 + v * w3;
+        float Ui = l * w4 + u * w5 + v * w6;
+        float Vi = l * w7 + u * w8 + v * w9;
+
+        pixel.luv_components.l    = Li /*< 0 ? 0 : Li > 100 ? 100 : Li*/;
+        pixel.luv_components.u    = Ui /*< -134 ? -134 : Ui > 220 ? 220 : Ui*/;
+        pixel.luv_components.v    = Vi /*< -140 ? -140 : Vi > 122 ? 122 : Vi*/;
+                
+        pixel.convert_luv_to_rgb();  
+        
+        float Ri = pixel.rgb_components.red;
+        float Gi = pixel.rgb_components.green;
+        float Bi = pixel.rgb_components.blue;
+
+        float Dr = r - Ri;
+        float Dg = g - Gi;
+        float Db = b - Bi;
+        
+        float Rm = (0.f  * Dr + 0.f  * Dg + 0.f * Db) + r ;
+        float Gm = (0.7f * Dr + 1.f  * Dg + 0.f * Db) + g ;
+        float Bm = (0.7f * Dr + 0.7f * Dg + 1.f * Db) + b ;
+
+        pixel.rgb_components.red = Rm < 0.f ? 0.f : Rm > 1.f ? 1.f : Rm;
+        pixel.rgb_components.green = Gm < 0.f ? 0.f : Gm > 1.f ? 1.f : Gm;
+        pixel.rgb_components.blue = Bm < 0.f ? 0.f : Bm > 1.f ? 1.f: Bm;
     }
+    /*
+    for (auto& pixel : img.get_pixels())
+    {
+        pixel.rgb_daltonization();
+    }*/
 
     export_path = "../../assets/generated/transformed.png";
     img.export_image(export_path);
 
     // Calculate transformed simulation
-    start = img.get_pixels();
-    while (start < end)
+    /*for (auto& pixel : img.get_pixels())
     {
-        start->simulate_deuteranopia();
-        ++start;
+        pixel.simulate_deuteranopia();
     }
-
     export_path = "../../assets/generated/transformed_deuteranopia_simulation.png";
-    img.export_image(export_path);
-
-    // Export transformed sobeled
-    export_path = "../../assets/generated/transformed_deuteranopia_sobeled.png";    
-    get_sobel_values(img, values);
-    */
+    img.export_image(export_path);   */
+    
 }
 
 /**
@@ -387,7 +400,7 @@ void NeuralNetworkApplication::lms_daltonization(Image& original, std::vector<fl
         {
             pixel.lms_deuteranopia();
         }
-        original.export_image("../../assets/data/deuteranopia_LMS.png");
+        //original.export_image("../../assets/data/deuteranopia_LMS.png");
         break;
 
     case PROTANOPIA:
@@ -396,7 +409,7 @@ void NeuralNetworkApplication::lms_daltonization(Image& original, std::vector<fl
         {
             pixel.lms_protanopia();
         }
-        original.export_image("../../assets/data/protanopia_LMS.png");
+        //original.export_image("../../assets/data/protanopia_LMS.png");
         break;
 
     case TRITANOPIA:
@@ -405,7 +418,7 @@ void NeuralNetworkApplication::lms_daltonization(Image& original, std::vector<fl
         {
             pixel.lms_tritanopia();
         }
-        original.export_image("../../assets/data/tritanopia_LMS.png");
+        //original.export_image("../../assets/data/tritanopia_LMS.png");
         break;
     }    
 

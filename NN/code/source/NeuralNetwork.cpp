@@ -69,9 +69,10 @@ void NeuralNetwork::export_network(std::string path)
     data->we = layers[2]->get_neurons()[1]->get_weights()[0];
     data->wf = layers[2]->get_neurons()[2]->get_weights()[0];
 
-    std::ofstream stream("../../assets/data/data.dat");
-    
     data->first_layer_neurons = layers[0]->get_neurons_size();
+    
+    std::ofstream stream(path.c_str());
+    
     std::cout<< std::endl << data->to_string();
 
     stream << data->to_string();
