@@ -30,57 +30,135 @@ public:
     */
     NeuralNetworkApplication(int& argc, char** argv) : QGuiApplication(argc, argv)
     {
-        auto start = std::chrono::system_clock::now();       
+        std::cout << std::endl << std::endl;
 
-        // Generate a random values        
-        //NeuralNetwork net(500 * 500 * 3);
-        //net.export_network("../../assets/data/data.dat");        
+        std::cout << 
+            
+       "         ooooo  oooo o88                                                           o888                                                                   " << std::endl <<
+       "          888    88  oooo   oooooooo8 ooooooooo  oooo  oooo  oo oooooo  ooooooooo   888  ooooooooo8                                                       " << std::endl <<
+       "           888  88    888  888ooooooo  888    888 888   888   888    888 888    888 888 888oooooo8                                                        " << std::endl <<
+       "            88888     888          888 888    888 888   888   888        888    888 888 888                                                               " << std::endl <<
+       "             888     o888o 88oooooo88  888ooo88    888o88 8o o888o       888ooo88  o888o  88oooo888                                                       " << std::endl <<
+       "                                      o888                              o888                                                                              " << std::endl <<
+       "         oooo   oooo                                              o888       oooo   oooo              o8                                      oooo        " << std::endl <<
+       "          8888o  88  ooooooooo8 oooo  oooo  oo oooooo   ooooooo    888        8888o  88  ooooooooo8 o888oo oooo  o  oooo  ooooooo  oo oooooo   888  ooooo " << std::endl <<
+       "          88 888o88 888oooooo8   888   888   888    888 ooooo888   888        88 888o88 888oooooo8   888    888 888 888 888     888 888    888 888o888    " << std::endl <<
+       "          88   8888 888          888   888   888      888    888   888        88   8888 888          888     888888888  888     888 888        8888 88o   " << std::endl <<
+       "         o88o    88   88oooo888   888o88 8o o888o      88ooo88 8o o888o      o88o    88   88oooo888   888o    88   88     88ooo88  o888o      o888o o888o " << std::endl
+            
+       ;
 
-        /*
-        // Train
-        //training(500, 500);               
-        */
-        // Genetic training
-        //evaluation = evaluation_type::LMS;
+
+        std::cout << std::endl << std::endl;
+
+        std::cout << "What do you want to do today?"            << std::endl;
+        std::cout << "1: Train the network for Deuteranopia"    << std::endl;
+        std::cout << "2: Train the network for Protanopia"      << std::endl;
+        std::cout << "3: Train the network for Tritanopia"      << std::endl;
+        std::cout << "4: Transform an image using Deuteranopia training"      << std::endl;
+        std::cout << "5: Transform an image using Protanopia training"      << std::endl;
+        std::cout << "6: Transform an image using Tritanopia training"      << std::endl;
         
-        //type = impairment_types::DEUTERANOPIA;
-        //genetic_training(500, 500, "../../assets/data/data_DEUTERANOPIA_LMS.dat");
-
-        /*
-        type = impairment_types::PROTANOPIA;        
-        genetic_training(500, 500, "../../assets/data/data_PROTANOPIA_LMS.dat");
-
-        type = impairment_types::TRITANOPIA;
-        genetic_training(500, 500, "../../assets/data/data_TRITANOPIA_LMS.dat");
+        int input;
         
-        evaluation = evaluation_type::RGB;
-        type = impairment_types::DEUTERANOPIA;
-        genetic_training(500, 500, "../../assets/data/data_DEUTERANOPIA_RGB.dat");
-        
-        type = impairment_types::PROTANOPIA;
-        genetic_training(500, 500, "../../assets/data/data_PROTANOPIA_RGB.dat");
+        std::cin >> input;
 
-        type = impairment_types::TRITANOPIA;
-        genetic_training(500, 500, "../../assets/data/data_TRITANOPIA_RGB.dat");
-        */
-        //std::cout << std::endl << "Done! :)";
+        system("cls");
+        
+        auto start = std::chrono::system_clock::now();
         auto end = std::chrono::system_clock::now();
+        std::time_t end_time;
+        std::chrono::duration<double> elapsed_minutes;
+        std::string name;
 
-        std::chrono::duration<double> elapsed_minutes = (end - start)/60;
-        std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+        switch (input)
+        {
+        case 1:
+            evaluation = evaluation_type::LMS;
+            type = impairment_types::DEUTERANOPIA;
+            genetic_training(500, 500, "../../assets/data/data_DEUTERANOPIA_LMS.dat");
+            
+            end = std::chrono::system_clock::now();
 
-        std::cout << std::endl << "Finished at " << std::ctime(&end_time) << std::endl
-                    << "Elapsed time: " << elapsed_minutes.count() << "minutes";
+            elapsed_minutes = (end - start) / 60;
+            end_time = std::chrono::system_clock::to_time_t(end);
 
-        /*
-        
+            std::cout << std::endl << "Finished at " << std::ctime(&end_time) << std::endl
+                << "Elapsed time: " << elapsed_minutes.count() << "minutes";
 
-        */
-        // Generate a test
-       //transform("0.png", "../../assets/data/data_DEUTERANOPIA_LMS.dat");
-       transform("deut_test.png", "../../assets/data/data_DEUTERANOPIA_LMS.dat");
-    
-        
+            break;
+        case 2:
+            evaluation = evaluation_type::LMS;
+            type = impairment_types::PROTANOPIA;
+            genetic_training(500, 500, "../../assets/data/data_PROTANOPIA_LMS.dat");
+            
+            end = std::chrono::system_clock::now();
+
+            elapsed_minutes = (end - start) / 60;
+            end_time = std::chrono::system_clock::to_time_t(end);
+
+            std::cout << std::endl << "Finished at " << std::ctime(&end_time) << std::endl
+                << "Elapsed time: " << elapsed_minutes.count() << "minutes";
+            
+            break;
+        case 3:
+            evaluation = evaluation_type::LMS;
+            type = impairment_types::TRITANOPIA;
+            genetic_training(500, 500, "../../assets/data/data_TRITANOPIA_LMS.dat");
+            
+            end = std::chrono::system_clock::now();
+
+            elapsed_minutes = (end - start) / 60;
+            end_time = std::chrono::system_clock::to_time_t(end);
+
+            std::cout << std::endl << "Finished at " << std::ctime(&end_time) << std::endl
+                << "Elapsed time: " << elapsed_minutes.count() << "minutes";
+            
+            break;
+        case 4:
+            std::cout << std::endl << "The image to transform must be inside the sample folder.";
+            std::cout << std::endl << "The generated image will be stored in the generated folder.";
+            std::cout << std::endl << "Introduce the name of the image with the format extension. For example: image.png" << std::endl;
+
+            std::cin >> name;
+
+            std::cout << std::endl << "Press any key if you are ready to continue";
+            std::cin >> input;
+
+            transform(name, "../../assets/data/data_DEUTERANOPIA_LMS.dat");
+
+            break;
+        case 5:
+
+            std::cout << std::endl << "The image to transform must be inside the sample folder.";
+            std::cout << std::endl << "The generated image will be stored in the generated folder.";
+            std::cout << std::endl << "Introduce the name of the image with the format extension. For example: image.png" << std::endl;
+            
+            std::cin >> name;
+
+            std::cout << std::endl << "Press any key if you are ready to continue";
+            std::cin >> input;
+
+            transform(name, "../../assets/data/data_PROTANOPIA_LMS.dat");
+
+            break;
+        case 6:
+
+            std::cout << std::endl << "The image to transform must be inside the sample folder.";
+            std::cout << std::endl << "The generated image will be stored in the generated folder.";
+            std::cout << std::endl << "Introduce the name of the image with the format extension. For example: image.png" << std::endl;
+
+            std::cin >> name;
+
+            std::cout << std::endl << "Press any key if you are ready to continue";
+            std::cin >> input;
+
+            transform(name, "../../assets/data/data_TRITANOPIA_LMS.dat");
+
+            break;            
+        }
+
+        std::cout << std::endl << "Done! :)";       
 
     }
 

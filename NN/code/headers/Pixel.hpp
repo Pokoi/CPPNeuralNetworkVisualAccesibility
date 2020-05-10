@@ -160,9 +160,12 @@ public:
     */
     void convert_xyz_to_rgb(float* buffer)
     {
-        rgb_components.red   = (3.063218f)  * buffer[0] + (-1.393325f) * buffer[1] + (-0.475802f) * buffer[2];
-        rgb_components.green = (-0.969243f) * buffer[0] + (1.875966f)  * buffer[1] + (0.041555f)  * buffer[2];
-        rgb_components.blue  = (0.067871f)  * buffer[0] + (-0.228834f) * buffer[1] + (1.069251f)  * buffer[2];
+        float r = (3.063218f) * buffer[0] + (-1.393325f) * buffer[1] + (-0.475802f) * buffer[2];
+        float g = (-0.969243f) * buffer[0] + (1.875966f) * buffer[1] + (0.041555f) * buffer[2];
+        float b = (0.067871f) * buffer[0] + (-0.228834f) * buffer[1] + (1.069251f) * buffer[2];
+        rgb_components.red   = clamp(r, 0.f, 1.f);
+        rgb_components.green = clamp(g, 0.f, 1.f);;
+        rgb_components.blue  = clamp(b, 0.f, 1.f);;
     }
 
     /**

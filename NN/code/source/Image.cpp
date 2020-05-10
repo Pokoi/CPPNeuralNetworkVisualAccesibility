@@ -229,8 +229,10 @@ void Image::sobel_colour()
 
     while (writer < last_value)
     {
-        //if(max - min != 0.f)
-        //*writer = ((*writer) - min) / max - min;
+        //if (max - min > 0.f)
+        //    *writer = ((*writer) - min) / max - min;
+        //else
+        //    *writer = 0;
 
         pixels[iterator].rgb_components.red    = (*writer);
         pixels[iterator].rgb_components.green  = (*writer);
